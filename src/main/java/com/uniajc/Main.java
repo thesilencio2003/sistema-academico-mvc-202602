@@ -2,22 +2,24 @@ package com.uniajc;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import java.awt.Color;
 import javax.swing.plaf.FontUIResource;
 import java.awt.Font;
 
 import com.uniajc.db.DatabaseConexion;
-import com.uniajc.vista.VistaEstudiante;
 import com.uniajc.vista.VistaPrincipalSwing;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("Iniciando Sistema de Gestión Académica UNIAJC...");
 
-        // Probar/inicializar conexión
-        DatabaseConexion.getConnection();
+        try (java.sql.Connection conn = DatabaseConexion.getConnection()) {
+            System.out.println("Conexión a la base de datos verificada correctamente.");
+        } catch (Exception e) {
+            System.err.println("ERROR: No se pudo conectar a la base de datos: " + e.getMessage());
+            e.printStackTrace();
+            return;
+        }
 
-        // Lanzar interfaz gráfica Swing
         SwingUtilities.invokeLater(() -> {
             configurarLookAndFeel();
             VistaPrincipalSwing ventana = new VistaPrincipalSwing();
@@ -27,7 +29,6 @@ public class Main {
 
     private static void configurarLookAndFeel() {
         try {
-            Color colorPrimario = new Color(41, 128, 185);
             UIManager.put("Label.font", new FontUIResource("Segoe UI", Font.PLAIN, 12));
             UIManager.put("Button.font", new FontUIResource("Segoe UI", Font.BOLD, 12));
             UIManager.put("Table.font", new FontUIResource("Segoe UI", Font.PLAIN, 11));
