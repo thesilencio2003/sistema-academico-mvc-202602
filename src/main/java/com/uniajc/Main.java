@@ -1,12 +1,13 @@
 package com.uniajc;
 
+import java.awt.Font;
+
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
-import java.awt.Font;
 
 import com.uniajc.db.DatabaseConexion;
-import com.uniajc.vista.VistaPrincipalSwing;
+import com.uniajc.vista.VistaLogin;
 
 public class Main {
     public static void main(String[] args) {
@@ -22,8 +23,9 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
             configurarLookAndFeel();
-            VistaPrincipalSwing ventana = new VistaPrincipalSwing();
-            ventana.setVisible(true);
+
+            VistaLogin vistaLogin = new VistaLogin();
+            vistaLogin.mostrarVentana();
         });
     }
 
