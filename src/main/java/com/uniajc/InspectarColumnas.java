@@ -6,13 +6,12 @@ import java.sql.ResultSet;
 import com.uniajc.db.DatabaseConexion;
 
 /**
- * Herramienta diagnostica: lista las columnas reales de cada tabla en practica-mvc.
- * Ejecutar una sola vez y luego borrar.
+ * Herramienta diagnóstica: lista las columnas de las tablas en practica-mvc.
  */
 public class InspectarColumnas {
 
     public static void main(String[] args) throws Exception {
-        String[] tablas = {"estudiantes", "docentes", "materias", "grupos", "inscripciones"};
+        String[] tablas = {"usuarios", "estudiantes", "docentes", "materias", "grupos", "inscripciones"};
 
         try (Connection conn = DatabaseConexion.getConnection()) {
             DatabaseMetaData meta = conn.getMetaData();
