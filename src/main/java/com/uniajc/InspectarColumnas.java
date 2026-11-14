@@ -11,7 +11,7 @@ import com.uniajc.db.DatabaseConexion;
 public class InspectarColumnas {
 
     public static void main(String[] args) throws Exception {
-        String[] tablas = {"usuarios", "estudiantes", "docentes", "materias", "grupos", "inscripciones"};
+        String[] tablas = {"usuarios", "estudiantes", "docentes", "materias", "grupos", "inscripciones", "periodos_academicos", "programas", "calificaciones"};
 
         try (Connection conn = DatabaseConexion.getConnection()) {
             DatabaseMetaData meta = conn.getMetaData();
