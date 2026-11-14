@@ -15,13 +15,15 @@ import com.uniajc.modelo.Materia;
 public class MateriaDao {
 
     public void guardar(Materia materia) {
-        String sql = "INSERT INTO \"practica-mvc\".materias (nombre_materia, creditos) VALUES (?, ?)";
+        String sql = "INSERT INTO \"practica-mvc\".materias (nombre_materia, creditos, codigo, horas_semanales) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, materia.getName());
             pstmt.setInt(2, materia.getCredits());
+            pstmt.setString(3, materia.getCodigo());
+            pstmt.setInt(4, materia.getHorasSemanales());
 
             pstmt.executeUpdate();
 
@@ -37,7 +39,7 @@ public class MateriaDao {
 
     public List<Materia> obtenerTodos() {
         List<Materia> lista = new ArrayList<>();
-        String sql = "SELECT id_materia AS id, nombre_materia, creditos FROM \"practica-mvc\".materias ORDER BY id_materia ASC";
+        String sql = "SELECT id_materia AS id, nombre_materia, creditos, codigo, horas_semanales FROM \"practica-mvc\".materias ORDER BY id_materia ASC";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -53,7 +55,7 @@ public class MateriaDao {
     }
 
     public Optional<Materia> buscarPorId(int id) {
-        String sql = "SELECT id_materia AS id, nombre_materia, creditos FROM \"practica-mvc\".materias WHERE id_materia = ?";
+        String sql = "SELECT id_materia AS id, nombre_materia, creditos, codigo, horas_semanales FROM \"practica-mvc\".materias WHERE id_materia = ?";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -73,7 +75,7 @@ public class MateriaDao {
 
     public List<Materia> buscarPorNombre(String nombre) {
         List<Materia> lista = new ArrayList<>();
-        String sql = "SELECT id_materia AS id, nombre_materia, creditos FROM \"practica-mvc\".materias " +
+        String sql = "SELECT id_materia AS id, nombre_materia, creditos, codigo, horas_semanales FROM \"practica-mvc\".materias " +
                      "WHERE LOWER(nombre_materia) LIKE ? ORDER BY id_materia ASC";
 
         try (Connection conn = DatabaseConexion.getConnection();
@@ -93,15 +95,36 @@ public class MateriaDao {
         return lista;
     }
 
+    public Optional<Materia> buscarPorCodigo(String codigo) {
+        String sql = "SELECT id_materia AS id, nombre_materia, creditos, codigo, horas_semanales FROM \"practica-mvc\".materias WHERE LOWER(codigo) = ?";
+
+        try (Connection conn = DatabaseConexion.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, codigo != null ? codigo.trim().toLowerCase() : "");
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapearMateria(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error en base de datos al buscar materia por código: " + e.getMessage(), e);
+        }
+        return Optional.empty();
+    }
+
     public void actualizar(Materia materia) {
-        String sql = "UPDATE \"practica-mvc\".materias SET nombre_materia = ?, creditos = ? WHERE id_materia = ?";
+        String sql = "UPDATE \"practica-mvc\".materias SET nombre_materia = ?, creditos = ?, codigo = ?, horas_semanales = ? WHERE id_materia = ?";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, materia.getName());
             pstmt.setInt(2, materia.getCredits());
-            pstmt.setInt(3, materia.getId());
+            pstmt.setString(3, materia.getCodigo());
+            pstmt.setInt(4, materia.getHorasSemanales());
+            pstmt.setInt(5, materia.getId());
 
             int filas = pstmt.executeUpdate();
             if (filas == 0) {
@@ -133,6 +156,8 @@ public class MateriaDao {
         materia.setId(rs.getInt("id"));
         materia.setName(rs.getString("nombre_materia"));
         materia.setCredits(rs.getInt("creditos"));
+        materia.setCodigo(rs.getString("codigo"));
+        materia.setHorasSemanales(rs.getInt("horas_semanales"));
         return materia;
     }
 }

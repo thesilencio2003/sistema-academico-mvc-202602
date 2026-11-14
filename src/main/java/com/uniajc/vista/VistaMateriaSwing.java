@@ -42,7 +42,7 @@ public class VistaMateriaSwing extends JPanel implements ActionListener {
     private static final Color COLOR_ACENTO = new Color(231, 76, 60);
     private static final Color COLOR_EXITO = new Color(39, 174, 96);
 
-    private static final String[] COLUMNAS = {"ID", "Nombre de Materia", "Créditos"};
+    private static final String[] COLUMNAS = {"ID", "Nombre de Materia", "Créditos", "Código", "Horas Semanales"};
 
     private final MateriaService materiaService;
     private JTable tabla;
@@ -57,7 +57,9 @@ public class VistaMateriaSwing extends JPanel implements ActionListener {
 
     private JDialog dialogoFormulario;
     private JTextField campoNombre;
+    private JTextField campoCodigo;
     private JSpinner spinnerCreditos;
+    private JSpinner spinnerHorasSemanales;
     private JButton botonGuardar;
     private boolean modoEdicion;
     private Materia materiaSeleccionada;
@@ -197,7 +199,7 @@ public class VistaMateriaSwing extends JPanel implements ActionListener {
         try {
             List<Materia> materias = materiaService.obtenerTodasLasMaterias();
             for (Materia m : materias) {
-                modeloTabla.addRow(new Object[]{m.getId(), m.getName(), m.getCredits()});
+                modeloTabla.addRow(new Object[]{m.getId(), m.getName(), m.getCredits(), m.getCodigo(), m.getHorasSemanales()});
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error al cargar materias: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -231,7 +233,7 @@ public class VistaMateriaSwing extends JPanel implements ActionListener {
                 JOptionPane.showMessageDialog(this, "No se encontraron materias para: \"" + criterio + "\"", "Sin Resultados", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 for (Materia m : resultados) {
-                    modeloTabla.addRow(new Object[]{m.getId(), m.getName(), m.getCredits()});
+                    modeloTabla.addRow(new Object[]{m.getId(), m.getName(), m.getCredits(), m.getCodigo(), m.getHorasSemanales()});
                 }
             }
         } catch (Exception ex) {
@@ -256,7 +258,7 @@ public class VistaMateriaSwing extends JPanel implements ActionListener {
 
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         dialogoFormulario = new JDialog(parentFrame, esEdicion ? "Editar Materia" : "Registrar Materia", true);
-        dialogoFormulario.setSize(380, 240);
+        dialogoFormulario.setSize(430, 300);
         dialogoFormulario.setLocationRelativeTo(this);
 
         JPanel panelFormulario = new JPanel(new GridBagLayout());
@@ -285,6 +287,14 @@ public class VistaMateriaSwing extends JPanel implements ActionListener {
         gbc.gridx = 1;
         panelFormulario.add(campoNombre, gbc);
 
+        // Código
+        gbc.gridy++;
+        gbc.gridx = 0;
+        panelFormulario.add(new JLabel("Código:"), gbc);
+        campoCodigo = new JTextField(18);
+        gbc.gridx = 1;
+        panelFormulario.add(campoCodigo, gbc);
+
         // Créditos
         gbc.gridy++;
         gbc.gridx = 0;
@@ -292,6 +302,14 @@ public class VistaMateriaSwing extends JPanel implements ActionListener {
         spinnerCreditos = new JSpinner(new SpinnerNumberModel(3, 1, 10, 1));
         gbc.gridx = 1;
         panelFormulario.add(spinnerCreditos, gbc);
+
+        // Horas semanales
+        gbc.gridy++;
+        gbc.gridx = 0;
+        panelFormulario.add(new JLabel("Horas semanales (1-40):"), gbc);
+        spinnerHorasSemanales = new JSpinner(new SpinnerNumberModel(2, 1, 40, 1));
+        gbc.gridx = 1;
+        panelFormulario.add(spinnerHorasSemanales, gbc);
 
         // Botones formulario
         gbc.gridy++;
@@ -313,7 +331,9 @@ public class VistaMateriaSwing extends JPanel implements ActionListener {
 
         if (esEdicion && materiaSeleccionada != null) {
             campoNombre.setText(materiaSeleccionada.getName());
+            campoCodigo.setText(materiaSeleccionada.getCodigo() != null ? materiaSeleccionada.getCodigo() : "");
             spinnerCreditos.setValue(materiaSeleccionada.getCredits());
+            spinnerHorasSemanales.setValue(materiaSeleccionada.getHorasSemanales());
         }
 
         dialogoFormulario.add(panelFormulario);
@@ -323,7 +343,9 @@ public class VistaMateriaSwing extends JPanel implements ActionListener {
     private void guardarMateria() {
         try {
             String nombre = campoNombre.getText().trim();
+            String codigo = campoCodigo.getText().trim();
             int creditos = (int) spinnerCreditos.getValue();
+            int horasSemanales = (int) spinnerHorasSemanales.getValue();
 
             if (nombre.isEmpty()) {
                 JOptionPane.showMessageDialog(dialogoFormulario, "El nombre de la materia es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
@@ -331,7 +353,9 @@ public class VistaMateriaSwing extends JPanel implements ActionListener {
             }
 
             materiaSeleccionada.setName(nombre);
+            materiaSeleccionada.setCodigo(codigo);
             materiaSeleccionada.setCredits(creditos);
+            materiaSeleccionada.setHorasSemanales(horasSemanales);
 
             if (modoEdicion) {
                 materiaService.actualizarMateria(materiaSeleccionada);

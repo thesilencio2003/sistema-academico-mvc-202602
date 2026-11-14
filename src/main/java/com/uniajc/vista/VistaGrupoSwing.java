@@ -47,7 +47,7 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
     private static final Color COLOR_ACENTO = new Color(231, 76, 60);
     private static final Color COLOR_EXITO = new Color(39, 174, 96);
 
-    private static final String[] COLUMNAS = {"ID Grupo", "ID Materia", "ID Docente", "Aula", "Horario"};
+    private static final String[] COLUMNAS = {"ID Grupo", "ID Materia", "ID Docente", "Aula", "Horario", "Cupo Máximo", "Periodo"};
 
     private final GrupoService grupoService;
     private final MateriaService materiaService;
@@ -68,6 +68,8 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
     private JComboBox<DocenteItem> comboDocentes;
     private JTextField campoAula;
     private JTextField campoHorario;
+    private JTextField campoPeriodo;
+    private JTextField campoCupoMaximo;
     private JButton botonGuardar;
     private boolean modoEdicion;
     private Grupo grupoSeleccionado;
@@ -220,7 +222,7 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
         try {
             List<Grupo> grupos = grupoService.obtenerTodosLosGrupos();
             for (Grupo g : grupos) {
-                modeloTabla.addRow(new Object[]{g.getId(), g.getIdMateria(), g.getIdDocente(), g.getClassroom(), g.getSchedule()});
+                modeloTabla.addRow(new Object[]{g.getId(), g.getIdMateria(), g.getIdDocente(), g.getClassroom(), g.getSchedule(), g.getCupoMaximo(), g.getPeriodo()});
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error al cargar grupos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -254,7 +256,7 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
                 JOptionPane.showMessageDialog(this, "No se encontraron grupos para: \"" + criterio + "\"", "Sin Resultados", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 for (Grupo g : resultados) {
-                    modeloTabla.addRow(new Object[]{g.getId(), g.getIdMateria(), g.getIdDocente(), g.getClassroom(), g.getSchedule()});
+                    modeloTabla.addRow(new Object[]{g.getId(), g.getIdMateria(), g.getIdDocente(), g.getClassroom(), g.getSchedule(), g.getCupoMaximo(), g.getPeriodo()});
                 }
             }
         } catch (Exception ex) {
@@ -279,7 +281,7 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
 
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         dialogoFormulario = new JDialog(parentFrame, esEdicion ? "Editar Grupo" : "Registrar Grupo", true);
-        dialogoFormulario.setSize(440, 320);
+        dialogoFormulario.setSize(500, 380);
         dialogoFormulario.setLocationRelativeTo(this);
 
         JPanel panelFormulario = new JPanel(new GridBagLayout());
@@ -340,6 +342,22 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
         gbc.gridx = 1;
         panelFormulario.add(campoHorario, gbc);
 
+        // Cupo máximo
+        gbc.gridy++;
+        gbc.gridx = 0;
+        panelFormulario.add(new JLabel("Cupo Máximo:"), gbc);
+        campoCupoMaximo = new JTextField(18);
+        gbc.gridx = 1;
+        panelFormulario.add(campoCupoMaximo, gbc);
+
+        // Período
+        gbc.gridy++;
+        gbc.gridx = 0;
+        panelFormulario.add(new JLabel("Período:"), gbc);
+        campoPeriodo = new JTextField(18);
+        gbc.gridx = 1;
+        panelFormulario.add(campoPeriodo, gbc);
+
         // Botones formulario
         gbc.gridy++;
         gbc.gridx = 0;
@@ -373,6 +391,8 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
             }
             campoAula.setText(grupoSeleccionado.getClassroom());
             campoHorario.setText(grupoSeleccionado.getSchedule());
+            campoCupoMaximo.setText(String.valueOf(grupoSeleccionado.getCupoMaximo()));
+            campoPeriodo.setText(grupoSeleccionado.getPeriodo() != null ? grupoSeleccionado.getPeriodo() : "");
         }
 
         dialogoFormulario.add(panelFormulario);
@@ -385,8 +405,10 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
             DocenteItem docenteSel = (DocenteItem) comboDocentes.getSelectedItem();
             String aula = campoAula.getText().trim();
             String horario = campoHorario.getText().trim();
+            String periodo = campoPeriodo.getText().trim();
+            int cupoMaximo = Integer.parseInt(campoCupoMaximo.getText().trim());
 
-            if (materiaSel == null || docenteSel == null || aula.isEmpty() || horario.isEmpty()) {
+            if (materiaSel == null || docenteSel == null || aula.isEmpty() || horario.isEmpty() || periodo.isEmpty()) {
                 JOptionPane.showMessageDialog(dialogoFormulario, "Todos los campos son obligatorios.", "Validación", JOptionPane.WARNING_MESSAGE);
                 return;
             }
@@ -395,6 +417,8 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
             grupoSeleccionado.setIdDocente(docenteSel.id);
             grupoSeleccionado.setClassroom(aula);
             grupoSeleccionado.setSchedule(horario);
+            grupoSeleccionado.setCupoMaximo(cupoMaximo);
+            grupoSeleccionado.setPeriodo(periodo);
 
             if (modoEdicion) {
                 grupoService.actualizarGrupo(grupoSeleccionado);
