@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -252,6 +253,7 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
 
             if (resultados.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No se encontraron grupos para: \"" + criterio + "\"", "Sin Resultados", JOptionPane.INFORMATION_MESSAGE);
+                cargarGrupos();
             } else {
                 for (Grupo g : resultados) {
                     modeloTabla.addRow(new Object[]{g.getId(), g.getIdMateria(), g.getIdDocente(), g.getClassroom(), g.getSchedule()});
@@ -319,7 +321,7 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
         comboDocentes = new JComboBox<>();
         List<Docente> docentes = docenteService.obtenerTodosLosDocentes();
         for (Docente d : docentes) {
-            comboDocentes.addItem(new DocenteItem(d.getId(), d.getName() + " (" + d.getEspecialidad() + ")"));
+            comboDocentes.addItem(new DocenteItem(d.getIdDocente(), d.getNombre() + " (" + d.getEspecialidad() + ")"));
         }
         gbc.gridx = 1;
         panelFormulario.add(comboDocentes, gbc);
@@ -437,4 +439,3 @@ public class VistaGrupoSwing extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {}
 }
-

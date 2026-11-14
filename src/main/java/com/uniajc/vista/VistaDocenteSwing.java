@@ -14,9 +14,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -40,7 +41,7 @@ public class VistaDocenteSwing extends JPanel implements ActionListener {
     private static final Color COLOR_ACENTO     = new Color(231, 76, 60);
     private static final Color COLOR_EXITO      = new Color(39, 174, 96);
 
-    private static final String[] COLUMNAS = {"ID", "Nombre", "Especialidad"};
+    private static final String[] COLUMNAS = {"ID", "Nombre", "Especialidad", "Documento", "Email", "Teléfono", "Título", "Contrato"};
 
     private final DocenteService docenteService;
     private JTable tabla;
@@ -52,6 +53,11 @@ public class VistaDocenteSwing extends JPanel implements ActionListener {
     private JDialog dialogoFormulario;
     private JTextField campoNombre;
     private JTextField campoEspecialidad;
+    private JTextField campoDocumento;
+    private JTextField campoEmail;
+    private JTextField campoTelefono;
+    private JComboBox<String> comboTituloAcademico;
+    private JComboBox<String> comboTipoContrato;
     private JButton botonGuardar;
     private boolean modoEdicion;
     private Docente docenteSeleccionado;
@@ -79,13 +85,13 @@ public class VistaDocenteSwing extends JPanel implements ActionListener {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         panel.setBackground(COLOR_SECUNDARIO);
 
-        JLabel label = new JLabel("Buscar (ID / Nombre / Especialidad):");
+        JLabel label = new JLabel("Buscar (ID / Nombre / Especialidad / Doc.):");
         label.setFont(new Font("Segoe UI", Font.BOLD, 13));
         label.setForeground(COLOR_PRIMARIO);
 
-        textoBusqueda = new JTextField(22);
+        textoBusqueda = new JTextField(20);
         textoBusqueda.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        textoBusqueda.setPreferredSize(new Dimension(220, 30));
+        textoBusqueda.setPreferredSize(new Dimension(200, 30));
         textoBusqueda.addKeyListener(new KeyAdapter() {
             @Override public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) buscarDocentes();
@@ -173,7 +179,16 @@ public class VistaDocenteSwing extends JPanel implements ActionListener {
         try {
             List<Docente> docentes = docenteService.obtenerTodosLosDocentes();
             for (Docente d : docentes) {
-                modeloTabla.addRow(new Object[]{d.getId(), d.getName(), d.getEspecialidad()});
+                modeloTabla.addRow(new Object[]{
+                    d.getIdDocente(), 
+                    d.getNombre(), 
+                    d.getEspecialidad(), 
+                    d.getDocumento(), 
+                    d.getEmail(), 
+                    d.getTelefono(), 
+                    d.getTituloAcademico(), 
+                    d.getTipoContrato()
+                });
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error al cargar docentes: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -191,12 +206,24 @@ public class VistaDocenteSwing extends JPanel implements ActionListener {
                 docenteService.buscarDocentePorId(Integer.parseInt(criterio)).ifPresent(resultados::add);
             }
             for (Docente d : docenteService.buscarDocentesPorNombre(criterio)) {
-                if (resultados.stream().noneMatch(e -> e.getId() == d.getId())) resultados.add(d);
+                if (resultados.stream().noneMatch(e -> e.getIdDocente() == d.getIdDocente())) resultados.add(d);
             }
             if (resultados.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No se encontraron docentes para: \"" + criterio + "\"", "Sin Resultados", JOptionPane.INFORMATION_MESSAGE);
+                cargarDocentes();
             } else {
-                for (Docente d : resultados) modeloTabla.addRow(new Object[]{d.getId(), d.getName(), d.getEspecialidad()});
+                for (Docente d : resultados) {
+                    modeloTabla.addRow(new Object[]{
+                        d.getIdDocente(), 
+                        d.getNombre(), 
+                        d.getEspecialidad(), 
+                        d.getDocumento(), 
+                        d.getEmail(), 
+                        d.getTelefono(), 
+                        d.getTituloAcademico(), 
+                        d.getTipoContrato()
+                    });
+                }
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error al buscar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -220,39 +247,57 @@ public class VistaDocenteSwing extends JPanel implements ActionListener {
 
         JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
         dialogoFormulario = new JDialog(parent, esEdicion ? "Editar Docente" : "Registrar Docente", true);
-        dialogoFormulario.setSize(380, 230);
+        dialogoFormulario.setSize(420, 480);
         dialogoFormulario.setLocationRelativeTo(this);
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(Color.WHITE);
-        form.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        form.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         JLabel titulo = new JLabel(esEdicion ? "Editar Docente" : "Registrar Docente");
-        titulo.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        titulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
         titulo.setForeground(COLOR_PRIMARIO);
         form.add(titulo, gbc);
 
         gbc.gridwidth = 1;
 
-        gbc.gridy++; gbc.gridx = 0;
-        form.add(new JLabel("Nombre:"), gbc);
+        // Campos del formulario
+        gbc.gridy++; gbc.gridx = 0; form.add(new JLabel("Nombre:"), gbc);
         campoNombre = new JTextField(18);
-        gbc.gridx = 1;
-        form.add(campoNombre, gbc);
+        gbc.gridx = 1; form.add(campoNombre, gbc);
 
-        gbc.gridy++; gbc.gridx = 0;
-        form.add(new JLabel("Especialidad:"), gbc);
+        gbc.gridy++; gbc.gridx = 0; form.add(new JLabel("Especialidad:"), gbc);
         campoEspecialidad = new JTextField(18);
-        gbc.gridx = 1;
-        form.add(campoEspecialidad, gbc);
+        gbc.gridx = 1; form.add(campoEspecialidad, gbc);
 
+        gbc.gridy++; gbc.gridx = 0; form.add(new JLabel("Documento:"), gbc);
+        campoDocumento = new JTextField(18);
+        gbc.gridx = 1; form.add(campoDocumento, gbc);
+
+        gbc.gridy++; gbc.gridx = 0; form.add(new JLabel("Email:"), gbc);
+        campoEmail = new JTextField(18);
+        gbc.gridx = 1; form.add(campoEmail, gbc);
+
+        gbc.gridy++; gbc.gridx = 0; form.add(new JLabel("Teléfono:"), gbc);
+        campoTelefono = new JTextField(18);
+        gbc.gridx = 1; form.add(campoTelefono, gbc);
+
+        gbc.gridy++; gbc.gridx = 0; form.add(new JLabel("Título Académico:"), gbc);
+        comboTituloAcademico = new JComboBox<>(new String[]{"Pregrado", "Especialización", "Maestría", "Doctorado"});
+        gbc.gridx = 1; form.add(comboTituloAcademico, gbc);
+
+        gbc.gridy++; gbc.gridx = 0; form.add(new JLabel("Tipo Contrato:"), gbc);
+        comboTipoContrato = new JComboBox<>(new String[]{"Tiempo Completo", "Medio Tiempo", "Cátedra", "Ocasional"});
+        gbc.gridx = 1; form.add(comboTipoContrato, gbc);
+
+        // Botones de acción
         gbc.gridy++; gbc.gridx = 0; gbc.gridwidth = 2;
-        JPanel botones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
+        JPanel botones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         botones.setBackground(Color.WHITE);
 
         botonGuardar = crearBoton("Guardar", COLOR_EXITO);
@@ -265,8 +310,17 @@ public class VistaDocenteSwing extends JPanel implements ActionListener {
         form.add(botones, gbc);
 
         if (esEdicion && docenteSeleccionado != null) {
-            campoNombre.setText(docenteSeleccionado.getName());
+            campoNombre.setText(docenteSeleccionado.getNombre());
             campoEspecialidad.setText(docenteSeleccionado.getEspecialidad());
+            campoDocumento.setText(docenteSeleccionado.getDocumento());
+            campoEmail.setText(docenteSeleccionado.getEmail());
+            campoTelefono.setText(docenteSeleccionado.getTelefono());
+            if (docenteSeleccionado.getTituloAcademico() != null) {
+                comboTituloAcademico.setSelectedItem(docenteSeleccionado.getTituloAcademico());
+            }
+            if (docenteSeleccionado.getTipoContrato() != null) {
+                comboTipoContrato.setSelectedItem(docenteSeleccionado.getTipoContrato());
+            }
         }
 
         dialogoFormulario.add(form);
@@ -277,21 +331,31 @@ public class VistaDocenteSwing extends JPanel implements ActionListener {
         try {
             String nombre = campoNombre.getText().trim();
             String especialidad = campoEspecialidad.getText().trim();
+            String documento = campoDocumento.getText().trim();
+            String email = campoEmail.getText().trim();
+            String telefono = campoTelefono.getText().trim();
+            String tituloAcademico = (String) comboTituloAcademico.getSelectedItem();
+            String tipoContrato = (String) comboTipoContrato.getSelectedItem();
 
-            if (nombre.isEmpty() || especialidad.isEmpty()) {
-                JOptionPane.showMessageDialog(dialogoFormulario, "Todos los campos son obligatorios.", "Validación", JOptionPane.WARNING_MESSAGE);
+            if (nombre.isEmpty() || especialidad.isEmpty() || documento.isEmpty()) {
+                JOptionPane.showMessageDialog(dialogoFormulario, "Nombre, Especialidad y Documento son obligatorios.", "Validación", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            docenteSeleccionado.setName(nombre);
+            docenteSeleccionado.setNombre(nombre);
             docenteSeleccionado.setEspecialidad(especialidad);
+            docenteSeleccionado.setDocumento(documento);
+            docenteSeleccionado.setEmail(email);
+            docenteSeleccionado.setTelefono(telefono);
+            docenteSeleccionado.setTituloAcademico(tituloAcademico);
+            docenteSeleccionado.setTipoContrato(tipoContrato);
 
             if (modoEdicion) {
                 docenteService.actualizarDocente(docenteSeleccionado);
-                JOptionPane.showMessageDialog(dialogoFormulario, "Docente actualizado.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(dialogoFormulario, "Docente actualizado con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 docenteService.registrarDocente(docenteSeleccionado);
-                JOptionPane.showMessageDialog(dialogoFormulario, "Docente registrado.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(dialogoFormulario, "Docente registrado con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             }
 
             dialogoFormulario.dispose();
