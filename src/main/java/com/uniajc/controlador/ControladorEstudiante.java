@@ -18,8 +18,26 @@ public class ControladorEstudiante {
         this.estudianteService = estudianteService;
     }
 
-    public void registrarEstudiante(String nombre, String apellido, String email) {
-        Estudiante estudiante = new Estudiante(nombre, apellido, email);
+    public void registrarEstudiante(
+            String nombre,
+            String apellido,
+            String email,
+            String tipoDocumento,
+            String documento,
+            String telefono,
+            int semestreActual,
+            String estado) {
+
+        Estudiante estudiante = new Estudiante(
+                nombre,
+                apellido,
+                email,
+                tipoDocumento,
+                documento,
+                telefono,
+                semestreActual,
+                estado);
+
         estudianteService.registrarEstudiante(estudiante);
     }
 
@@ -35,8 +53,28 @@ public class ControladorEstudiante {
         return estudianteService.buscarEstudiantesPorNombre(nombre);
     }
 
-    public void actualizarEstudiante(int id, String nombre, String apellido, String email) {
-        Estudiante estudiante = new Estudiante(id, nombre, apellido, email);
+    public void actualizarEstudiante(
+            int id,
+            String nombre,
+            String apellido,
+            String email,
+            String tipoDocumento,
+            String documento,
+            String telefono,
+            int semestreActual,
+            String estado) {
+
+        Estudiante estudiante = new Estudiante(
+                id,
+                nombre,
+                apellido,
+                email,
+                tipoDocumento,
+                documento,
+                telefono,
+                semestreActual,
+                estado);
+
         estudianteService.actualizarEstudiante(estudiante);
     }
 
