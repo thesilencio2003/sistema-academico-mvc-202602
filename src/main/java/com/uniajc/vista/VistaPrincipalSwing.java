@@ -41,6 +41,7 @@ public class VistaPrincipalSwing extends JFrame {
         VistaMateriaSwing vistaMateriaSwing = new VistaMateriaSwing();
         VistaGrupoSwing vistaGrupoSwing = new VistaGrupoSwing();
         VistaInscripcionSwing vistaInscripcionSwing = new VistaInscripcionSwing();
+        VistaCalificacionSwing vistaCalificacionSwing = new VistaCalificacionSwing();
 
         mainPanel.add(panelBienvenida, "INICIO");
         mainPanel.add(vistaEstudianteSwing, "ESTUDIANTES");
@@ -48,6 +49,7 @@ public class VistaPrincipalSwing extends JFrame {
         mainPanel.add(vistaMateriaSwing, "MATERIAS");
         mainPanel.add(vistaGrupoSwing, "GRUPOS");
         mainPanel.add(vistaInscripcionSwing, "INSCRIPCIONES");
+        mainPanel.add(vistaCalificacionSwing, "CALIFICACIONES");
 
         setJMenuBar(crearMenu());
         add(mainPanel);
@@ -84,11 +86,15 @@ public class VistaPrincipalSwing extends JFrame {
         JMenuItem itemInscripciones = new JMenuItem("Inscripciones");
         itemInscripciones.addActionListener(e -> cardLayout.show(mainPanel, "INSCRIPCIONES"));
 
+        JMenuItem itemCalificaciones = new JMenuItem("Calificaciones");
+        itemCalificaciones.addActionListener(e -> cardLayout.show(mainPanel, "CALIFICACIONES"));
+
         menuModulos.add(itemEstudiantes);
         menuModulos.add(itemDocentes);
         menuModulos.add(itemMaterias);
         menuModulos.add(itemGrupos);
         menuModulos.add(itemInscripciones);
+        menuModulos.add(itemCalificaciones);
 
         menuBar.add(menuArchivo);
         menuBar.add(menuModulos);

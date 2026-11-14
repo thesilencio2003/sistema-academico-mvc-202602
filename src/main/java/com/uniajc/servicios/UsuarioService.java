@@ -54,6 +54,12 @@ public class UsuarioService {
             throw new IllegalArgumentException("Usuario o contraseña incorrectos.");
         }
 
+        // Actualizar último acceso del usuario autenticado
+        try {
+            usuarioDao.actualizarUltimoAcceso(usuario.getId());
+            usuario.setUltimoAcceso(new java.sql.Timestamp(System.currentTimeMillis()));
+        } catch (Exception ignored) {}
+
         return usuario;
     }
 

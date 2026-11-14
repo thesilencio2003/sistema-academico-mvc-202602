@@ -1,5 +1,6 @@
 package com.uniajc.dao;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -141,6 +142,29 @@ public class InscripcionCursoDao {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error en base de datos al actualizar inscripción: " + e.getMessage(), e);
+        }
+    }
+
+    public void actualizarNotaFinalYEstado(int idInscripcion, BigDecimal notaFinal, String estado) {
+        String sql = "UPDATE \"practica-mvc\".inscripciones SET nota_final = ?, estado = ? WHERE id_inscripcion = ?";
+
+        try (Connection conn = DatabaseConexion.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            if (notaFinal != null) {
+                pstmt.setBigDecimal(1, notaFinal);
+            } else {
+                pstmt.setNull(1, java.sql.Types.DECIMAL);
+            }
+            pstmt.setString(2, estado);
+            pstmt.setInt(3, idInscripcion);
+
+            int filas = pstmt.executeUpdate();
+            if (filas == 0) {
+                throw new RuntimeException("Inscripción no encontrada con ID: " + idInscripcion);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error en base de datos al actualizar nota final de inscripción: " + e.getMessage(), e);
         }
     }
 

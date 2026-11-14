@@ -196,9 +196,29 @@ public class VistaInscripcionSwing extends JPanel implements ActionListener {
         botonActualizar = crearBoton("Actualizar", new Color(149, 165, 166));
         botonActualizar.addActionListener(e -> cargarInscripciones());
 
+        JButton botonCalificaciones = crearBoton("Gestionar Calificaciones", new Color(142, 68, 173));
+        botonCalificaciones.addActionListener(e -> {
+            int fila = tabla.getSelectedRow();
+            int idIns = -1;
+            if (fila >= 0) {
+                idIns = (int) modeloTabla.getValueAt(fila, 0);
+            }
+            JDialog dialogCal = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Gestión de Calificaciones", true);
+            dialogCal.setSize(800, 500);
+            dialogCal.setLocationRelativeTo(this);
+            VistaCalificacionSwing panelCal = new VistaCalificacionSwing();
+            if (idIns > 0) {
+                panelCal.seleccionarInscripcion(idIns);
+            }
+            dialogCal.add(panelCal);
+            dialogCal.setVisible(true);
+            cargarInscripciones();
+        });
+
         panel.add(botonRegistrar);
         panel.add(botonEditar);
         panel.add(botonEliminar);
+        panel.add(botonCalificaciones);
         panel.add(botonActualizar);
 
         return panel;

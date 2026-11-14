@@ -15,7 +15,7 @@ import com.uniajc.modelo.Usuario;
 public class UsuarioDao {
 
     public void guardar(Usuario usuario) {
-        String sql = "INSERT INTO \"practica-mvc\".usuarios (username, password, nombre, rol, activo) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO \"practica-mvc\".usuarios (username, password, nombre, rol, activo, email) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -25,6 +25,7 @@ public class UsuarioDao {
             pstmt.setString(3, usuario.getNombre());
             pstmt.setString(4, usuario.getRol());
             pstmt.setBoolean(5, usuario.isActivo());
+            pstmt.setString(6, usuario.getEmail());
 
             pstmt.executeUpdate();
 
@@ -40,7 +41,7 @@ public class UsuarioDao {
 
     public List<Usuario> obtenerTodos() {
         List<Usuario> lista = new ArrayList<>();
-        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion FROM \"practica-mvc\".usuarios ORDER BY id ASC";
+        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion, email, ultimo_acceso FROM \"practica-mvc\".usuarios ORDER BY id ASC";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -56,7 +57,7 @@ public class UsuarioDao {
     }
 
     public Optional<Usuario> buscarPorId(int id) {
-        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion FROM \"practica-mvc\".usuarios WHERE id = ?";
+        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion, email, ultimo_acceso FROM \"practica-mvc\".usuarios WHERE id = ?";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -75,7 +76,7 @@ public class UsuarioDao {
     }
 
     public Optional<Usuario> buscarPorUsername(String username) {
-        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion FROM \"practica-mvc\".usuarios WHERE LOWER(username) = LOWER(?)";
+        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion, email, ultimo_acceso FROM \"practica-mvc\".usuarios WHERE LOWER(username) = LOWER(?)";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -94,7 +95,7 @@ public class UsuarioDao {
     }
 
     public void actualizar(Usuario usuario) {
-        String sql = "UPDATE \"practica-mvc\".usuarios SET username = ?, password = ?, nombre = ?, rol = ?, activo = ? WHERE id = ?";
+        String sql = "UPDATE \"practica-mvc\".usuarios SET username = ?, password = ?, nombre = ?, rol = ?, activo = ?, email = ? WHERE id = ?";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -104,7 +105,8 @@ public class UsuarioDao {
             pstmt.setString(3, usuario.getNombre());
             pstmt.setString(4, usuario.getRol());
             pstmt.setBoolean(5, usuario.isActivo());
-            pstmt.setInt(6, usuario.getId());
+            pstmt.setString(6, usuario.getEmail());
+            pstmt.setInt(7, usuario.getId());
 
             int filas = pstmt.executeUpdate();
             if (filas == 0) {
@@ -112,6 +114,19 @@ public class UsuarioDao {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error en base de datos al actualizar usuario: " + e.getMessage(), e);
+        }
+    }
+
+    public void actualizarUltimoAcceso(int idUsuario) {
+        String sql = "UPDATE \"practica-mvc\".usuarios SET ultimo_acceso = NOW() WHERE id = ?";
+
+        try (Connection conn = DatabaseConexion.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idUsuario);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar último acceso del usuario: " + e.getMessage(), e);
         }
     }
 
@@ -140,7 +155,8 @@ public class UsuarioDao {
         usuario.setRol(rs.getString("rol"));
         usuario.setActivo(rs.getBoolean("activo"));
         usuario.setFechaCreacion(rs.getTimestamp("fecha_creacion"));
+        usuario.setEmail(rs.getString("email"));
+        usuario.setUltimoAcceso(rs.getTimestamp("ultimo_acceso"));
         return usuario;
     }
 }
-

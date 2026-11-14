@@ -10,6 +10,8 @@ public class Usuario {
     private String rol;
     private boolean activo;
     private Timestamp fechaCreacion;
+    private String email;
+    private Timestamp ultimoAcceso;
 
     public Usuario() {
         this.activo = true;
@@ -25,12 +27,33 @@ public class Usuario {
         this.fechaCreacion = fechaCreacion;
     }
 
+    public Usuario(int id, String username, String password, String nombre, String rol, boolean activo, Timestamp fechaCreacion, String email, Timestamp ultimoAcceso) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.nombre = nombre;
+        this.rol = rol;
+        this.activo = activo;
+        this.fechaCreacion = fechaCreacion;
+        this.email = email;
+        this.ultimoAcceso = ultimoAcceso;
+    }
+
     public Usuario(String username, String password, String nombre, String rol, boolean activo) {
         this.username = username;
         this.password = password;
         this.nombre = nombre;
         this.rol = rol;
         this.activo = activo;
+    }
+
+    public Usuario(String username, String password, String nombre, String rol, boolean activo, String email) {
+        this.username = username;
+        this.password = password;
+        this.nombre = nombre;
+        this.rol = rol;
+        this.activo = activo;
+        this.email = email;
     }
 
     public int getId() {
@@ -89,6 +112,22 @@ public class Usuario {
         this.fechaCreacion = fechaCreacion;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Timestamp getUltimoAcceso() {
+        return ultimoAcceso;
+    }
+
+    public void setUltimoAcceso(Timestamp ultimoAcceso) {
+        this.ultimoAcceso = ultimoAcceso;
+    }
+
     @Override
     public String toString() {
         return "Usuario{" +
@@ -98,7 +137,8 @@ public class Usuario {
                 ", rol='" + rol + '\'' +
                 ", activo=" + activo +
                 ", fechaCreacion=" + fechaCreacion +
+                ", email='" + email + '\'' +
+                ", ultimoAcceso=" + ultimoAcceso +
                 '}';
     }
 }
-
