@@ -20,6 +20,13 @@ public class ControladorGrupo {
 
     public void registrarGrupo(int idMateria, int idDocente, String classroom, String schedule) {
         Grupo grupo = new Grupo(idMateria, idDocente, classroom, schedule);
+        grupo.setCupoMaximo(30);
+        grupo.setPeriodo("2026-1");
+        grupoService.registrarGrupo(grupo);
+    }
+
+    public void registrarGrupo(int idMateria, int idDocente, String classroom, String schedule, int cupoMaximo, String periodo) {
+        Grupo grupo = new Grupo(idMateria, idDocente, classroom, schedule, cupoMaximo, periodo);
         grupoService.registrarGrupo(grupo);
     }
 
@@ -35,8 +42,19 @@ public class ControladorGrupo {
         return grupoService.buscarGruposPorAula(aula);
     }
 
+    public List<Grupo> buscarGruposPorPeriodo(String periodo) {
+        return grupoService.buscarGruposPorPeriodo(periodo);
+    }
+
     public void actualizarGrupo(int id, int idMateria, int idDocente, String classroom, String schedule) {
         Grupo grupo = new Grupo(id, idMateria, idDocente, classroom, schedule);
+        grupo.setCupoMaximo(30);
+        grupo.setPeriodo("2026-1");
+        grupoService.actualizarGrupo(grupo);
+    }
+
+    public void actualizarGrupo(int id, int idMateria, int idDocente, String classroom, String schedule, int cupoMaximo, String periodo) {
+        Grupo grupo = new Grupo(id, idMateria, idDocente, classroom, schedule, cupoMaximo, periodo);
         grupoService.actualizarGrupo(grupo);
     }
 

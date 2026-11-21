@@ -20,6 +20,13 @@ public class ControladorMateria {
 
     public void registrarMateria(String nombre, int creditos) {
         Materia materia = new Materia(nombre, creditos);
+        materia.setCodigo("GEN");
+        materia.setHorasSemanales(2);
+        materiaService.registrarMateria(materia);
+    }
+
+    public void registrarMateria(String nombre, int creditos, String codigo, int horasSemanales) {
+        Materia materia = new Materia(nombre, creditos, codigo, horasSemanales);
         materiaService.registrarMateria(materia);
     }
 
@@ -37,6 +44,13 @@ public class ControladorMateria {
 
     public void actualizarMateria(int id, String nombre, int creditos) {
         Materia materia = new Materia(id, nombre, creditos);
+        materia.setCodigo("GEN");
+        materia.setHorasSemanales(2);
+        materiaService.actualizarMateria(materia);
+    }
+
+    public void actualizarMateria(int id, String nombre, int creditos, String codigo, int horasSemanales) {
+        Materia materia = new Materia(id, nombre, creditos, codigo, horasSemanales);
         materiaService.actualizarMateria(materia);
     }
 

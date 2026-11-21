@@ -49,6 +49,13 @@ public class GrupoService {
         return grupoDao.buscarPorAula(aula.trim());
     }
 
+    public List<Grupo> buscarGruposPorPeriodo(String periodo) {
+        if (periodo == null || periodo.trim().isEmpty()) {
+            return obtenerTodosLosGrupos();
+        }
+        return grupoDao.buscarPorPeriodo(periodo.trim());
+    }
+
     public void actualizarGrupo(Grupo grupo) {
         if (grupo == null || grupo.getId() <= 0) {
             throw new IllegalArgumentException("Grupo inválido.");
@@ -95,6 +102,14 @@ public class GrupoService {
 
         if (grupo.getSchedule() == null || grupo.getSchedule().trim().isEmpty()) {
             throw new IllegalArgumentException("El horario es obligatorio.");
+        }
+
+        if (grupo.getCupoMaximo() <= 0) {
+            throw new IllegalArgumentException("El cupo máximo debe ser mayor a 0.");
+        }
+
+        if (grupo.getPeriodo() == null || grupo.getPeriodo().trim().isEmpty()) {
+            throw new IllegalArgumentException("El período académico es obligatorio.");
         }
     }
 }

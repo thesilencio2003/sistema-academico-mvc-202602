@@ -15,7 +15,7 @@ import com.uniajc.modelo.Grupo;
 public class GrupoDao {
 
     public void guardar(Grupo grupo) {
-        String sql = "INSERT INTO \"practica-mvc\".grupos (id_materia, id_docente, aula, horario) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO \"practica-mvc\".grupos (id_materia, id_docente, aula, horario, cupo_maximo, periodo) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -24,6 +24,8 @@ public class GrupoDao {
             pstmt.setInt(2, grupo.getIdDocente());
             pstmt.setString(3, grupo.getClassroom());
             pstmt.setString(4, grupo.getSchedule());
+            pstmt.setInt(5, grupo.getCupoMaximo());
+            pstmt.setString(6, grupo.getPeriodo());
 
             pstmt.executeUpdate();
 
@@ -39,7 +41,7 @@ public class GrupoDao {
 
     public List<Grupo> obtenerTodos() {
         List<Grupo> lista = new ArrayList<>();
-        String sql = "SELECT id_grupo AS id, id_materia, id_docente, aula, horario FROM \"practica-mvc\".grupos ORDER BY id_grupo ASC";
+        String sql = "SELECT id_grupo AS id, id_materia, id_docente, aula, horario, cupo_maximo, periodo FROM \"practica-mvc\".grupos ORDER BY id_grupo ASC";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -55,7 +57,7 @@ public class GrupoDao {
     }
 
     public Optional<Grupo> buscarPorId(int id) {
-        String sql = "SELECT id_grupo AS id, id_materia, id_docente, aula, horario FROM \"practica-mvc\".grupos WHERE id_grupo = ?";
+        String sql = "SELECT id_grupo AS id, id_materia, id_docente, aula, horario, cupo_maximo, periodo FROM \"practica-mvc\".grupos WHERE id_grupo = ?";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -75,7 +77,7 @@ public class GrupoDao {
 
     public List<Grupo> buscarPorMateria(int idMateria) {
         List<Grupo> lista = new ArrayList<>();
-        String sql = "SELECT id_grupo AS id, id_materia, id_docente, aula, horario FROM \"practica-mvc\".grupos WHERE id_materia = ? ORDER BY id_grupo ASC";
+        String sql = "SELECT id_grupo AS id, id_materia, id_docente, aula, horario, cupo_maximo, periodo FROM \"practica-mvc\".grupos WHERE id_materia = ? ORDER BY id_grupo ASC";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -95,7 +97,7 @@ public class GrupoDao {
 
     public List<Grupo> buscarPorAula(String classroom) {
         List<Grupo> lista = new ArrayList<>();
-        String sql = "SELECT id_grupo AS id, id_materia, id_docente, aula, horario FROM \"practica-mvc\".grupos " +
+        String sql = "SELECT id_grupo AS id, id_materia, id_docente, aula, horario, cupo_maximo, periodo FROM \"practica-mvc\".grupos " +
                      "WHERE LOWER(aula) LIKE ? ORDER BY id_grupo ASC";
 
         try (Connection conn = DatabaseConexion.getConnection();
@@ -115,8 +117,29 @@ public class GrupoDao {
         return lista;
     }
 
+    public List<Grupo> buscarPorPeriodo(String periodo) {
+        List<Grupo> lista = new ArrayList<>();
+        String sql = "SELECT id_grupo AS id, id_materia, id_docente, aula, horario, cupo_maximo, periodo FROM \"practica-mvc\".grupos " +
+                     "WHERE LOWER(periodo) = ? ORDER BY id_grupo ASC";
+
+        try (Connection conn = DatabaseConexion.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, periodo != null ? periodo.trim().toLowerCase() : "");
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapearGrupo(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error en base de datos al buscar grupos por periodo: " + e.getMessage(), e);
+        }
+        return lista;
+    }
+
     public void actualizar(Grupo grupo) {
-        String sql = "UPDATE \"practica-mvc\".grupos SET id_materia = ?, id_docente = ?, aula = ?, horario = ? WHERE id_grupo = ?";
+        String sql = "UPDATE \"practica-mvc\".grupos SET id_materia = ?, id_docente = ?, aula = ?, horario = ?, cupo_maximo = ?, periodo = ? WHERE id_grupo = ?";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -125,7 +148,9 @@ public class GrupoDao {
             pstmt.setInt(2, grupo.getIdDocente());
             pstmt.setString(3, grupo.getClassroom());
             pstmt.setString(4, grupo.getSchedule());
-            pstmt.setInt(5, grupo.getId());
+            pstmt.setInt(5, grupo.getCupoMaximo());
+            pstmt.setString(6, grupo.getPeriodo());
+            pstmt.setInt(7, grupo.getId());
 
             int filas = pstmt.executeUpdate();
             if (filas == 0) {
@@ -159,6 +184,9 @@ public class GrupoDao {
         grupo.setIdDocente(rs.getInt("id_docente"));
         grupo.setClassroom(rs.getString("aula"));
         grupo.setSchedule(rs.getString("horario"));
+        int cupo = rs.getObject("cupo_maximo") == null ? 0 : rs.getInt("cupo_maximo");
+        grupo.setCupoMaximo(cupo);
+        grupo.setPeriodo(rs.getString("periodo"));
         return grupo;
     }
 }

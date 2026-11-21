@@ -20,6 +20,12 @@ public class MateriaService {
 
     public void registrarMateria(Materia materia) {
         validarMateria(materia);
+        if (materia.getCodigo() != null && !materia.getCodigo().trim().isEmpty()) {
+            Optional<Materia> existente = materiaDao.buscarPorCodigo(materia.getCodigo());
+            if (existente.isPresent() && existente.get().getId() != materia.getId()) {
+                throw new IllegalArgumentException("El código de la materia ya existe.");
+            }
+        }
         materiaDao.guardar(materia);
     }
 
@@ -52,6 +58,12 @@ public class MateriaService {
         }
 
         validarMateria(materia);
+        if (materia.getCodigo() != null && !materia.getCodigo().trim().isEmpty()) {
+            Optional<Materia> conCodigo = materiaDao.buscarPorCodigo(materia.getCodigo());
+            if (conCodigo.isPresent() && conCodigo.get().getId() != materia.getId()) {
+                throw new IllegalArgumentException("El código de la materia ya existe.");
+            }
+        }
         materiaDao.actualizar(materia);
     }
 
@@ -79,6 +91,17 @@ public class MateriaService {
 
         if (materia.getCredits() < 1 || materia.getCredits() > 10) {
             throw new IllegalArgumentException("Los créditos deben estar entre 1 y 10.");
+        }
+
+        if (materia.getCodigo() != null && !materia.getCodigo().trim().isEmpty()) {
+            String codigo = materia.getCodigo().trim();
+            if (!codigo.matches("^[A-Z0-9-]+$")) {
+                throw new IllegalArgumentException("El código debe contener solo letras mayúsculas, números y guiones.");
+            }
+        }
+
+        if (materia.getHorasSemanales() < 1 || materia.getHorasSemanales() > 40) {
+            throw new IllegalArgumentException("Las horas semanales deben estar entre 1 y 40.");
         }
     }
 }

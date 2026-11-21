@@ -6,6 +6,8 @@ public class Grupo {
     private int idDocente;
     private String classroom;
     private String schedule;
+    private int cupoMaximo;
+    private String periodo;
 
     public Grupo() {}
 
@@ -17,11 +19,30 @@ public class Grupo {
         this.schedule = schedule;
     }
 
+    public Grupo(int id, int idMateria, int idDocente, String classroom, String schedule, int cupoMaximo, String periodo) {
+        this.id = id;
+        this.idMateria = idMateria;
+        this.idDocente = idDocente;
+        this.classroom = classroom;
+        this.schedule = schedule;
+        this.cupoMaximo = cupoMaximo;
+        this.periodo = periodo;
+    }
+
     public Grupo(int idMateria, int idDocente, String classroom, String schedule) {
         this.idMateria = idMateria;
         this.idDocente = idDocente;
         this.classroom = classroom;
         this.schedule = schedule;
+    }
+
+    public Grupo(int idMateria, int idDocente, String classroom, String schedule, int cupoMaximo, String periodo) {
+        this.idMateria = idMateria;
+        this.idDocente = idDocente;
+        this.classroom = classroom;
+        this.schedule = schedule;
+        this.cupoMaximo = cupoMaximo;
+        this.periodo = periodo;
     }
 
     public int getId() {
@@ -64,6 +85,22 @@ public class Grupo {
         this.schedule = schedule;
     }
 
+    public int getCupoMaximo() {
+        return cupoMaximo;
+    }
+
+    public void setCupoMaximo(int cupoMaximo) {
+        this.cupoMaximo = cupoMaximo;
+    }
+
+    public String getPeriodo() {
+        return periodo;
+    }
+
+    public void setPeriodo(String periodo) {
+        this.periodo = periodo;
+    }
+
     @Override
     public String toString() {
         return "Grupo{" +
@@ -72,6 +109,8 @@ public class Grupo {
                 ", idDocente=" + idDocente +
                 ", classroom='" + classroom + '\'' +
                 ", schedule='" + schedule + '\'' +
+                ", cupoMaximo=" + cupoMaximo +
+                ", periodo='" + periodo + '\'' +
                 '}';
     }
 }
