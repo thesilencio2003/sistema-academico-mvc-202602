@@ -3,12 +3,20 @@ package com.uniajc.vista;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
+import java.awt.Image;
+import java.net.URL;
+
+import javax.swing.Box;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -30,7 +38,10 @@ public class VistaPrincipalSwing extends JFrame {
         // Panel de bienvenida
         JPanel panelBienvenida = new JPanel(new BorderLayout());
         panelBienvenida.setBackground(new Color(236, 240, 241));
-        JLabel labelBienvenida = new JLabel("<html><center><h1>Bienvenido al Sistema Académico UNIAJC</h1><p>Seleccione un módulo desde el menú superior para gestionar el ecosistema académico</p></center></html>", SwingConstants.CENTER);
+        JLabel labelBienvenida = new JLabel(
+                "<html><center><h1>Bienvenido al Sistema Académico UNIAJC</h1><p>Seleccione un módulo desde el menú superior para gestionar el ecosistema académico</p></center></html>",
+                SwingConstants.CENTER
+        );
         labelBienvenida.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         labelBienvenida.setForeground(new Color(41, 128, 185));
         panelBienvenida.add(labelBienvenida, BorderLayout.CENTER);
@@ -99,7 +110,51 @@ public class VistaPrincipalSwing extends JFrame {
         menuBar.add(menuArchivo);
         menuBar.add(menuModulos);
 
+        // Empuja el botón hacia la esquina superior derecha
+        menuBar.add(Box.createHorizontalGlue());
+        menuBar.add(crearBotonCerrarSesion());
+
         return menuBar;
+    }
+
+    private JButton crearBotonCerrarSesion() {
+        JButton btnCerrarSesion = new JButton("Cerrar sesión");
+        btnCerrarSesion.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnCerrarSesion.setForeground(new Color(192, 57, 43));
+        btnCerrarSesion.setFocusPainted(false);
+        btnCerrarSesion.setContentAreaFilled(false);
+        btnCerrarSesion.setBorderPainted(false);
+        btnCerrarSesion.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnCerrarSesion.setToolTipText("Cerrar sesión actual");
+
+        URL iconUrl = getClass().getResource("/recursos/cerrar-sesion.png");
+        if (iconUrl != null) {
+            ImageIcon rawIcon = new ImageIcon(iconUrl);
+            Image scaledImage = rawIcon.getImage().getScaledInstance(18, 18, Image.SCALE_SMOOTH);
+            btnCerrarSesion.setIcon(new ImageIcon(scaledImage));
+            btnCerrarSesion.setIconTextGap(6);
+        }
+
+        btnCerrarSesion.addActionListener(e -> cerrarSesion());
+        return btnCerrarSesion;
+    }
+
+    private void cerrarSesion() {
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Estás seguro de que deseas cerrar sesión?",
+                "Confirmar cierre de sesión",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+            dispose();
+            SwingUtilities.invokeLater(() -> {
+                VistaLogin login = new VistaLogin();
+                login.setVisible(true);
+            });
+        }
     }
 
     public static void main(String[] args) {

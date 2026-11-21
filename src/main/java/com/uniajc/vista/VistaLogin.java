@@ -147,8 +147,26 @@ public class VistaLogin extends JFrame {
         lblMensaje.setText(mensaje);
     }
 
+    public void limpiarCampos() {
+        if (txtUsername != null) {
+            txtUsername.setText("");
+        }
+        if (txtContrasena != null) {
+            txtContrasena.setText("");
+        }
+        if (lblMensaje != null) {
+            lblMensaje.setText(" ");
+        }
+    }
+
     public void mostrarVentana() {
-        SwingUtilities.invokeLater(() -> setVisible(true));
+        SwingUtilities.invokeLater(() -> {
+            limpiarCampos();
+            setVisible(true);
+            if (txtUsername != null) {
+                txtUsername.requestFocusInWindow();
+            }
+        });
     }
 
     public static void main(String[] args) {
