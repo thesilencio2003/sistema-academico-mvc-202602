@@ -1,34 +1,98 @@
 package com.uniajc.modelo;
 
 public class Docente {
-    private int id;
-    private String name;
+    private int idDocente;
+    private String nombre;
     private String especialidad;
+    private String documento;
+    private String email;
+    private String telefono;
+    private String tituloAcademico;
+    private String tipoContrato;
 
-    public Docente() {}
+    // Constructor vacío
+    public Docente() {
+    }
 
-    public Docente(int id, String name, String especialidad) {
-        this.id = id;
-        this.name = name;
+    // Constructor con todos los atributos
+    public Docente(int idDocente, String nombre, String especialidad, String documento, String email, String telefono, String tituloAcademico, String tipoContrato) {
+        this.idDocente = idDocente;
+        this.nombre = nombre;
+        this.especialidad = especialidad;
+        this.documento = documento;
+        this.email = email;
+        this.telefono = telefono;
+        this.tituloAcademico = tituloAcademico;
+        this.tipoContrato = tipoContrato;
+    }
+
+    // Getters y Setters
+    public int getIdDocente() {
+        return idDocente;
+    }
+
+    public void setIdDocente(int idDocente) {
+        this.idDocente = idDocente;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getEspecialidad() {
+        return especialidad;
+    }
+
+    public void setEspecialidad(String especialidad) {
         this.especialidad = especialidad;
     }
 
-    public Docente(String name, String especialidad) {
-        this.name = name;
-        this.especialidad = especialidad;
+    public String getDocumento() {
+        return documento;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public void setDocumento(String documento) {
+        this.documento = documento;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getEspecialidad() { return especialidad; }
-    public void setEspecialidad(String especialidad) { this.especialidad = especialidad; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public String getTituloAcademico() {
+        return tituloAcademico;
+    }
+
+    public void setTituloAcademico(String tituloAcademico) {
+        this.tituloAcademico = tituloAcademico;
+    }
+
+    public String getTipoContrato() {
+        return tipoContrato;
+    }
+
+    public void setTipoContrato(String tipoContrato) {
+        this.tipoContrato = tipoContrato;
+    }
 
     @Override
     public String toString() {
-        return "Docente{id=" + id + ", name='" + name + "', especialidad='" + especialidad + "'}";
+        return nombre + " - " + especialidad;
     }
 }

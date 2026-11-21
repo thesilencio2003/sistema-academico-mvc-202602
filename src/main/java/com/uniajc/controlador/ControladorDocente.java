@@ -18,10 +18,11 @@ public class ControladorDocente {
         this.docenteService = docenteService;
     }
 
-    public void registrarDocente(String nombre, String especialidad) {
-        Docente docente = new Docente(nombre, especialidad);
+    public void registrarDocente(String nombre, String especialidad, String documento, String email, String telefono, String tituloAcademico, String tipoContrato) {
+        Docente docente = new Docente(0, nombre, especialidad, documento, email, telefono, tituloAcademico, tipoContrato);
         docenteService.registrarDocente(docente);
     }
+
     public List<Docente> listarDocentes() {
         return docenteService.obtenerTodosLosDocentes();
     }
@@ -34,10 +35,11 @@ public class ControladorDocente {
         return docenteService.buscarDocentesPorNombre(nombre);
     }
 
-    public void actualizarDocente(int id, String nombre, String especialidad) {
-        Docente docente = new Docente(id, nombre, especialidad);
+    public void actualizarDocente(int id, String nombre, String especialidad, String documento, String email, String telefono, String tituloAcademico, String tipoContrato) {
+        Docente docente = new Docente(id, nombre, especialidad, documento, email, telefono, tituloAcademico, tipoContrato);
         docenteService.actualizarDocente(docente);
     }
+
     public void eliminarDocente(int id) {
         docenteService.eliminarDocente(id);
     }

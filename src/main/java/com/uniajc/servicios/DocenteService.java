@@ -42,13 +42,13 @@ public class DocenteService {
     }
 
     public void actualizarDocente(Docente docente) {
-        if (docente == null || docente.getId() <= 0) {
+        if (docente == null || docente.getIdDocente() <= 0) {
             throw new IllegalArgumentException("Docente inválido.");
         }
 
-        Optional<Docente> existente = docenteDao.buscarPorId(docente.getId());
+        Optional<Docente> existente = docenteDao.buscarPorId(docente.getIdDocente());
         if (existente.isEmpty()) {
-            throw new IllegalArgumentException("Docente no encontrado con ID: " + docente.getId());
+            throw new IllegalArgumentException("Docente no encontrado con ID: " + docente.getIdDocente());
         }
 
         validarDocente(docente);
@@ -72,11 +72,14 @@ public class DocenteService {
         if (docente == null) {
             throw new IllegalArgumentException("El docente no puede ser nulo.");
         }
-        if (docente.getName() == null || docente.getName().trim().isEmpty()) {
+        if (docente.getNombre() == null || docente.getNombre().trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre del docente es obligatorio.");
         }
         if (docente.getEspecialidad() == null || docente.getEspecialidad().trim().isEmpty()) {
             throw new IllegalArgumentException("La especialidad es obligatoria.");
+        }
+        if (docente.getDocumento() == null || docente.getDocumento().trim().isEmpty()) {
+            throw new IllegalArgumentException("El documento es obligatorio.");
         }
     }
 }
