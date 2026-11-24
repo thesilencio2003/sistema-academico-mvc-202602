@@ -2,14 +2,22 @@ package com.uniajc.vista;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -29,7 +37,9 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 
 import com.uniajc.controlador.ControladorCalificacion;
 import com.uniajc.modelo.Calificacion;
@@ -38,13 +48,40 @@ import com.uniajc.servicios.InscripcionCursoService;
 
 public class VistaCalificacionSwing extends JPanel implements ActionListener {
 
-    private static final Color COLOR_PRIMARIO = new Color(41, 128, 185);
-    private static final Color COLOR_SECUNDARIO = new Color(236, 240, 241);
-    private static final Color COLOR_ACENTO = new Color(231, 76, 60);
-    private static final Color COLOR_EXITO = new Color(39, 174, 96);
+    // Degradado suave del panel (coherente con las vistas anteriores y sin blanco
+    // cegador)
+    private static final Color COLOR_FONDO_INICIO = new Color(245, 239, 255);
+    private static final Color COLOR_FONDO_FIN = new Color(255, 241, 247);
 
-    private static final String[] COLUMNAS = {"ID", "Inscripción", "Corte / Evaluación", "Porcentaje (%)", "Nota", "Observación"};
-    private static final String[] CORTES_PREDEFINIDOS = {"Corte 1 (30%)", "Corte 2 (35%)", "Corte 3 (35%)", "Examen Final", "Laboratorio", "Taller", "Otro"};
+    // Degradado oscuro GTA VI (encabezado de tabla y acentos)
+    private static final Color COLOR_DEGRADADO_OSCURO_INICIO = new Color(28, 15, 62);
+    private static final Color COLOR_DEGRADADO_OSCURO_FIN = new Color(110, 24, 92);
+
+    // Degradado principal (magenta vibrante a coral/naranja)
+    private static final Color COLOR_PRIMARIO_INICIO = new Color(236, 72, 153);
+    private static final Color COLOR_PRIMARIO_FIN = new Color(249, 115, 22);
+    private static final Color COLOR_PRIMARIO_HOVER_INICIO = new Color(219, 39, 119);
+    private static final Color COLOR_PRIMARIO_HOVER_FIN = new Color(234, 88, 12);
+
+    // Colores secundarios y de estado
+    private static final Color COLOR_SECUNDARIO_MORADO = new Color(102, 88, 138);
+    private static final Color COLOR_SECUNDARIO_MORADO_HOVER = new Color(82, 68, 118);
+    private static final Color COLOR_NEUTRO = new Color(148, 136, 178);
+    private static final Color COLOR_NEUTRO_HOVER = new Color(126, 113, 158);
+    private static final Color COLOR_ELIMINAR = new Color(225, 29, 72);
+    private static final Color COLOR_ELIMINAR_HOVER = new Color(190, 18, 60);
+
+    private static final Color COLOR_TEXTO_OSCURO = new Color(24, 16, 46);
+    private static final Color COLOR_ACENTO_MAGENTA = new Color(219, 39, 119);
+    private static final Color COLOR_INPUT_FONDO = new Color(255, 252, 255);
+    private static final Color COLOR_TABLA_FONDO = new Color(253, 251, 255);
+    private static final Color COLOR_RESUMEN_FONDO = new Color(252, 231, 243);
+    private static final Color COLOR_BORDE = new Color(216, 198, 232);
+
+    private static final String[] COLUMNAS = { "ID", "Inscripción", "Corte / Evaluación", "Porcentaje (%)", "Nota",
+            "Observación" };
+    private static final String[] CORTES_PREDEFINIDOS = { "Corte 1 (30%)", "Corte 2 (35%)", "Corte 3 (35%)",
+            "Examen Final", "Laboratorio", "Taller", "Otro" };
 
     private final ControladorCalificacion controladorCalificacion;
     private final InscripcionCursoService inscripcionService;
@@ -68,29 +105,47 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
         cargarCalificaciones();
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        GradientPaint gp = new GradientPaint(
+                0, 0, COLOR_FONDO_INICIO,
+                getWidth(), getHeight(), COLOR_FONDO_FIN);
+        g2.setPaint(gp);
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        g2.dispose();
+    }
+
     private void inicializarUI() {
-        setLayout(new BorderLayout(10, 10));
-        setBackground(COLOR_SECUNDARIO);
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setLayout(new BorderLayout(12, 12));
+        setOpaque(false);
+        setBorder(BorderFactory.createEmptyBorder(16, 18, 16, 18));
 
         // 1. Panel Superior (Título y Filtro de Inscripción)
-        JPanel panelNorte = new JPanel(new BorderLayout(5, 5));
-        panelNorte.setBackground(COLOR_SECUNDARIO);
+        JPanel panelNorte = new JPanel(new BorderLayout(6, 8));
+        panelNorte.setOpaque(false);
 
         JLabel titulo = new JLabel("Gestión de Calificaciones por Corte");
-        titulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        titulo.setForeground(COLOR_PRIMARIO);
+        titulo.setFont(new Font("Segoe UI", Font.BOLD, 21));
+        titulo.setForeground(COLOR_TEXTO_OSCURO);
 
-        JPanel panelFiltro = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        panelFiltro.setBackground(COLOR_SECUNDARIO);
+        JPanel panelFiltro = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
+        panelFiltro.setOpaque(false);
 
         JLabel lblInscripcion = new JLabel("Seleccionar Inscripción:");
-        lblInscripcion.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblInscripcion.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblInscripcion.setForeground(COLOR_TEXTO_OSCURO);
+
         comboFiltroInscripcion = new JComboBox<>();
-        comboFiltroInscripcion.setPreferredSize(new Dimension(300, 28));
+        comboFiltroInscripcion.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        comboFiltroInscripcion.setForeground(COLOR_TEXTO_OSCURO);
+        comboFiltroInscripcion.setBackground(COLOR_INPUT_FONDO);
+        comboFiltroInscripcion.setPreferredSize(new Dimension(320, 34));
         comboFiltroInscripcion.addActionListener(e -> cargarCalificaciones());
 
-        btnRefrescar = crearBoton("Refrescar", COLOR_PRIMARIO);
+        btnRefrescar = crearBotonSolido("Refrescar", COLOR_SECUNDARIO_MORADO, COLOR_SECUNDARIO_MORADO_HOVER, 112);
         btnRefrescar.addActionListener(this);
 
         panelFiltro.add(lblInscripcion);
@@ -110,42 +165,70 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
         };
 
         tabla = new JTable(modeloTabla);
-        tabla.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        tabla.setRowHeight(25);
+        tabla.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tabla.setForeground(COLOR_TEXTO_OSCURO);
+        tabla.setRowHeight(28);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
-        tabla.getTableHeader().setBackground(COLOR_PRIMARIO);
-        tabla.getTableHeader().setForeground(Color.WHITE);
+        tabla.setGridColor(COLOR_BORDE);
+        tabla.setBackground(COLOR_TABLA_FONDO);
+        tabla.setSelectionBackground(COLOR_PRIMARIO_INICIO);
+        tabla.setSelectionForeground(Color.WHITE);
+
+        JTableHeader header = tabla.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        header.setPreferredSize(new Dimension(0, 34));
+        header.setReorderingAllowed(false);
+        header.setDefaultRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(
+                        table, value, isSelected, hasFocus, row, column);
+                lbl.setHorizontalAlignment(SwingConstants.LEFT);
+                lbl.setForeground(Color.WHITE);
+                lbl.setBackground(COLOR_DEGRADADO_OSCURO_INICIO);
+                lbl.setOpaque(true);
+                lbl.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 0, 1, 1, COLOR_DEGRADADO_OSCURO_FIN),
+                        BorderFactory.createEmptyBorder(0, 8, 0, 8)));
+                return lbl;
+            }
+        });
 
         JScrollPane scrollTabla = new JScrollPane(tabla);
+        scrollTabla.getViewport().setBackground(COLOR_TABLA_FONDO);
+        scrollTabla.setBorder(BorderFactory.createLineBorder(COLOR_BORDE, 1));
         add(scrollTabla, BorderLayout.CENTER);
 
         // 3. Panel Inferior (Resumen de Notas y Botones de Acción)
         JPanel panelSur = new JPanel(new BorderLayout(10, 10));
-        panelSur.setBackground(COLOR_SECUNDARIO);
+        panelSur.setOpaque(false);
 
-        JPanel panelResumen = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
-        panelResumen.setBackground(new Color(220, 230, 242));
-        panelResumen.setBorder(BorderFactory.createLineBorder(new Color(180, 200, 220), 1));
+        JPanel panelResumen = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 8));
+        panelResumen.setBackground(COLOR_RESUMEN_FONDO);
+        panelResumen.setBorder(BorderFactory.createLineBorder(COLOR_BORDE, 1));
 
         lblPorcentajeTotal = new JLabel("Porcentaje Acumulado: 0.0%");
         lblPorcentajeTotal.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lblPorcentajeTotal.setForeground(new Color(44, 62, 80));
+        lblPorcentajeTotal.setForeground(COLOR_TEXTO_OSCURO);
+
+        JLabel separador = new JLabel("|");
+        separador.setForeground(COLOR_SECUNDARIO_MORADO);
 
         lblNotaAcumulada = new JLabel("Nota Final Ponderada: 0.00 / 5.0");
         lblNotaAcumulada.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lblNotaAcumulada.setForeground(COLOR_PRIMARIO);
+        lblNotaAcumulada.setForeground(COLOR_ACENTO_MAGENTA);
 
         panelResumen.add(lblPorcentajeTotal);
-        panelResumen.add(new JLabel("|"));
+        panelResumen.add(separador);
         panelResumen.add(lblNotaAcumulada);
 
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
-        panelBotones.setBackground(COLOR_SECUNDARIO);
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 6));
+        panelBotones.setOpaque(false);
 
-        btnNuevo = crearBoton("Nueva Calificación", COLOR_EXITO);
-        btnEditar = crearBoton("Modificar", COLOR_PRIMARIO);
-        btnEliminar = crearBoton("Eliminar", COLOR_ACENTO);
+        btnNuevo = crearBotonDegradado("Nueva Calificación", 165);
+        btnEditar = crearBotonSolido("Modificar", COLOR_SECUNDARIO_MORADO, COLOR_SECUNDARIO_MORADO_HOVER, 112);
+        btnEliminar = crearBotonSolido("Eliminar", COLOR_ELIMINAR, COLOR_ELIMINAR_HOVER, 112);
 
         btnNuevo.addActionListener(this);
         btnEditar.addActionListener(this);
@@ -171,7 +254,8 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
                         ins.getId(), ins.getIdEstudiante(), ins.getIdGrupo()));
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar inscripciones: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al cargar inscripciones: " + e.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -201,7 +285,7 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
             BigDecimal sumaPonderada = BigDecimal.ZERO;
 
             for (Calificacion c : lista) {
-                modeloTabla.addRow(new Object[]{
+                modeloTabla.addRow(new Object[] {
                         c.getId(),
                         c.getInscripcionId(),
                         c.getCorte(),
@@ -212,7 +296,8 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
 
                 if (c.getPorcentaje() != null && c.getNota() != null) {
                     sumaPorcentaje = sumaPorcentaje.add(c.getPorcentaje());
-                    BigDecimal aporte = c.getNota().multiply(c.getPorcentaje()).divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
+                    BigDecimal aporte = c.getNota().multiply(c.getPorcentaje()).divide(new BigDecimal("100"), 4,
+                            RoundingMode.HALF_UP);
                     sumaPonderada = sumaPonderada.add(aporte);
                 }
             }
@@ -230,7 +315,8 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar calificaciones: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al cargar calificaciones: " + e.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -258,7 +344,8 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
         } else if (e.getSource() == btnEditar) {
             int fila = tabla.getSelectedRow();
             if (fila == -1) {
-                JOptionPane.showMessageDialog(this, "Seleccione una calificación para modificar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Seleccione una calificación para modificar.", "Aviso",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
             int id = (int) modeloTabla.getValueAt(fila, 0);
@@ -266,7 +353,8 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
             if (opt.isPresent()) {
                 mostrarDialogoFormulario(opt.get());
             } else {
-                JOptionPane.showMessageDialog(this, "No se encontró la calificación seleccionada.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "No se encontró la calificación seleccionada.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == btnEliminar) {
             eliminarCalificacionSeleccionada();
@@ -276,7 +364,8 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
     private void eliminarCalificacionSeleccionada() {
         int fila = tabla.getSelectedRow();
         if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione una calificación para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Seleccione una calificación para eliminar.", "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -284,7 +373,8 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
         String corte = (String) modeloTabla.getValueAt(fila, 2);
 
         int confirm = JOptionPane.showConfirmDialog(this,
-                "¿Está seguro de eliminar la calificación del " + corte + " (ID: " + id + ")?\nLa nota final se recalculará automáticamente.",
+                "¿Está seguro de eliminar la calificación del " + corte + " (ID: " + id
+                        + ")?\nLa nota final se recalculará automáticamente.",
                 "Confirmar Eliminación",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
@@ -292,10 +382,12 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
         if (confirm == JOptionPane.YES_OPTION) {
             try {
                 controladorCalificacion.eliminarCalificacion(id);
-                JOptionPane.showMessageDialog(this, "Calificación eliminada con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Calificación eliminada con éxito.", "Éxito",
+                        JOptionPane.INFORMATION_MESSAGE);
                 cargarCalificaciones();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error al eliminar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error al eliminar: " + ex.getMessage(), "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -304,12 +396,25 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
         boolean esNuevo = (existente == null);
         JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this),
                 esNuevo ? "Registrar Nueva Calificación" : "Modificar Calificación", true);
-        dialog.setSize(440, 360);
+        dialog.setSize(450, 380);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout());
 
-        JPanel panelForm = new JPanel(new GridBagLayout());
-        panelForm.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        JPanel panelForm = new JPanel(new GridBagLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                GradientPaint gp = new GradientPaint(
+                        0, 0, COLOR_FONDO_INICIO,
+                        getWidth(), getHeight(), COLOR_FONDO_FIN);
+                g2.setPaint(gp);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+            }
+        };
+        panelForm.setBorder(BorderFactory.createEmptyBorder(16, 20, 14, 20));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(6, 6, 6, 6);
@@ -319,9 +424,12 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
         try {
             List<InscripcionCurso> inscripciones = inscripcionService.obtenerTodasLasInscripciones();
             for (InscripcionCurso ins : inscripciones) {
-                comboInscripcionModal.addItem("Inscripción #" + ins.getId() + " (Estudiante: " + ins.getIdEstudiante() + " | Grupo: " + ins.getIdGrupo() + ")");
+                comboInscripcionModal.addItem("Inscripción #" + ins.getId() + " (Estudiante: " + ins.getIdEstudiante()
+                        + " | Grupo: " + ins.getIdGrupo() + ")");
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
+        estilizarCombo(comboInscripcionModal);
 
         // Preseleccionar la inscripción activa si hay filtro
         int inscripcionActiva = obtenerInscripcionSeleccionada();
@@ -336,14 +444,16 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
 
         JComboBox<String> comboCorte = new JComboBox<>(CORTES_PREDEFINIDOS);
         comboCorte.setEditable(true);
+        estilizarCombo(comboCorte);
 
-        JTextField txtPorcentaje = new JTextField();
-        JTextField txtNota = new JTextField();
-        JTextField txtObservacion = new JTextField();
+        JTextField txtPorcentaje = crearCampoForm();
+        JTextField txtNota = crearCampoForm();
+        JTextField txtObservacion = crearCampoForm();
 
         if (!esNuevo) {
             for (int i = 0; i < comboInscripcionModal.getItemCount(); i++) {
-                if (comboInscripcionModal.getItemAt(i).startsWith("Inscripción #" + existente.getInscripcionId() + " ")) {
+                if (comboInscripcionModal.getItemAt(i)
+                        .startsWith("Inscripción #" + existente.getInscripcionId() + " ")) {
                     comboInscripcionModal.setSelectedIndex(i);
                     break;
                 }
@@ -356,49 +466,80 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
         }
 
         // Fila 0: Inscripción
-        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.3;
-        panelForm.add(new JLabel("Inscripción:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0.3;
+        panelForm.add(crearEtiquetaForm("Inscripción:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
         panelForm.add(comboInscripcionModal, gbc);
 
         // Fila 1: Corte
-        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.3;
-        panelForm.add(new JLabel("Corte / Evaluación:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 0.3;
+        panelForm.add(crearEtiquetaForm("Corte / Evaluación:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
         panelForm.add(comboCorte, gbc);
 
         // Fila 2: Porcentaje
-        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0.3;
-        panelForm.add(new JLabel("Porcentaje (%):"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.weightx = 0.3;
+        panelForm.add(crearEtiquetaForm("Porcentaje (%):"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
         panelForm.add(txtPorcentaje, gbc);
 
         // Fila 3: Nota
-        gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0.3;
-        panelForm.add(new JLabel("Nota (0.0 - 5.0):"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.weightx = 0.3;
+        panelForm.add(crearEtiquetaForm("Nota (0.0 - 5.0):"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
         panelForm.add(txtNota, gbc);
 
         // Fila 4: Observación
-        gbc.gridx = 0; gbc.gridy = 4; gbc.weightx = 0.3;
-        panelForm.add(new JLabel("Observación:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.weightx = 0.3;
+        panelForm.add(crearEtiquetaForm("Observación:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
         panelForm.add(txtObservacion, gbc);
 
         // Botones del modal
-        JPanel panelBotonesModal = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        JButton btnGuardar = crearBoton("Guardar", COLOR_EXITO);
-        JButton btnCancelar = crearBoton("Cancelar", Color.GRAY);
+        JPanel panelBotonesModal = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 10)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                GradientPaint gp = new GradientPaint(
+                        0, 0, COLOR_FONDO_INICIO,
+                        getWidth(), getHeight(), COLOR_FONDO_FIN);
+                g2.setPaint(gp);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+            }
+        };
+        JButton btnGuardar = crearBotonDegradado("Guardar", 118);
+        JButton btnCancelar = crearBotonSolido("Cancelar", COLOR_NEUTRO, COLOR_NEUTRO_HOVER, 112);
 
         btnCancelar.addActionListener(e -> dialog.dispose());
         btnGuardar.addActionListener(e -> {
             try {
                 String itemIns = (String) comboInscripcionModal.getSelectedItem();
-                if (itemIns == null) throw new IllegalArgumentException("Seleccione una inscripción.");
+                if (itemIns == null)
+                    throw new IllegalArgumentException("Seleccione una inscripción.");
                 int idIns = Integer.parseInt(itemIns.substring(itemIns.indexOf('#') + 1, itemIns.indexOf(' ')));
 
-                String corte = comboCorte.getSelectedItem() != null ? comboCorte.getSelectedItem().toString().trim() : "";
-                if (corte.isEmpty()) throw new IllegalArgumentException("El corte o evaluación no puede estar vacío.");
+                String corte = comboCorte.getSelectedItem() != null ? comboCorte.getSelectedItem().toString().trim()
+                        : "";
+                if (corte.isEmpty())
+                    throw new IllegalArgumentException("El corte o evaluación no puede estar vacío.");
 
                 String strPorcentaje = txtPorcentaje.getText().trim().replace(',', '.');
                 String strNota = txtNota.getText().trim().replace(',', '.');
@@ -409,19 +550,25 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
 
                 if (esNuevo) {
                     controladorCalificacion.registrarCalificacion(idIns, corte, porcentaje, nota, observacion);
-                    JOptionPane.showMessageDialog(dialog, "Calificación registrada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(dialog, "Calificación registrada correctamente.", "Éxito",
+                            JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    controladorCalificacion.actualizarCalificacion(existente.getId(), existente.getInscripcionId(), corte, porcentaje, nota, observacion);
-                    JOptionPane.showMessageDialog(dialog, "Calificación actualizada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    controladorCalificacion.actualizarCalificacion(existente.getId(), existente.getInscripcionId(),
+                            corte, porcentaje, nota, observacion);
+                    JOptionPane.showMessageDialog(dialog, "Calificación actualizada correctamente.", "Éxito",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
 
                 dialog.dispose();
                 cargarCalificaciones();
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Por favor ingrese valores numéricos válidos en porcentaje y nota (ej. 30 y 4.5).", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog,
+                        "Por favor ingrese valores numéricos válidos en porcentaje y nota (ej. 30 y 4.5).", "Error",
+                        JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Error de Validación", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Error de Validación",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -433,13 +580,102 @@ public class VistaCalificacionSwing extends JPanel implements ActionListener {
         dialog.setVisible(true);
     }
 
-    private JButton crearBoton(String texto, Color fondo) {
-        JButton btn = new JButton(texto);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btn.setBackground(fondo);
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        return btn;
+    private JLabel crearEtiquetaForm(String texto) {
+        JLabel label = new JLabel(texto);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        label.setForeground(COLOR_TEXTO_OSCURO);
+        return label;
+    }
+
+    private JTextField crearCampoForm() {
+        JTextField campo = new JTextField();
+        campo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        campo.setForeground(COLOR_TEXTO_OSCURO);
+        campo.setBackground(COLOR_INPUT_FONDO);
+        campo.setPreferredSize(new Dimension(210, 34));
+        return campo;
+    }
+
+    private <T> void estilizarCombo(JComboBox<T> combo) {
+        combo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        combo.setForeground(COLOR_TEXTO_OSCURO);
+        combo.setBackground(COLOR_INPUT_FONDO);
+        combo.setPreferredSize(new Dimension(210, 34));
+    }
+
+    private JButton crearBotonDegradado(String texto, int ancho) {
+        JButton boton = new JButton(texto) {
+            private boolean hover = false;
+
+            {
+                addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        hover = true;
+                        repaint();
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        hover = false;
+                        repaint();
+                    }
+                });
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+                Color c1 = hover ? COLOR_PRIMARIO_HOVER_INICIO : COLOR_PRIMARIO_INICIO;
+                Color c2 = hover ? COLOR_PRIMARIO_HOVER_FIN : COLOR_PRIMARIO_FIN;
+
+                GradientPaint gp = new GradientPaint(0, 0, c1, getWidth(), 0, c2);
+                g2.setPaint(gp);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                g2.dispose();
+
+                setContentAreaFilled(false);
+                super.paintComponent(g);
+            }
+        };
+        boton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        boton.setForeground(Color.WHITE);
+        boton.setFocusPainted(false);
+        boton.setBorderPainted(false);
+        boton.setContentAreaFilled(false);
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        boton.setPreferredSize(new Dimension(ancho, 36));
+        return boton;
+    }
+
+    private JButton crearBotonSolido(String texto, Color colorBase, Color colorHover, int ancho) {
+        JButton boton = new JButton(texto);
+        boton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        boton.setBackground(colorBase);
+        boton.setForeground(Color.WHITE);
+        boton.setFocusPainted(false);
+        boton.setBorderPainted(false);
+        boton.setOpaque(true);
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        boton.setPreferredSize(new Dimension(ancho, 36));
+
+        boton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (boton.isEnabled()) {
+                    boton.setBackground(colorHover);
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                boton.setBackground(colorBase);
+            }
+        });
+
+        return boton;
     }
 }
-
