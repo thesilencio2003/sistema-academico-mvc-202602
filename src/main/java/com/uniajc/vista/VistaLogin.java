@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -34,17 +35,31 @@ import com.uniajc.modelo.Usuario;
 
 public class VistaLogin extends JFrame {
 
-    private static final Color COLOR_FONDO = new Color(241, 245, 249);
-    private static final Color COLOR_TARJETA = Color.WHITE;
-    private static final Color COLOR_TEXTO_PRINCIPAL = new Color(15, 23, 42);
-    private static final Color COLOR_TEXTO_SECUNDARIO = new Color(100, 116, 139);
-    private static final Color COLOR_PRIMARIO = new Color(37, 99, 235);
-    private static final Color COLOR_PRIMARIO_HOVER = new Color(29, 78, 216);
-    private static final Color COLOR_SECUNDARIO_FONDO = Color.WHITE;
-    private static final Color COLOR_SECUNDARIO_HOVER = new Color(248, 250, 252);
-    private static final Color COLOR_BORDE = new Color(226, 232, 240);
-    private static final Color COLOR_ERROR = new Color(220, 38, 38);
-    private static final Color COLOR_EXITO = new Color(22, 163, 74);
+    // Degradado del fondo exterior
+    private static final Color COLOR_FONDO_INICIO = new Color(28, 15, 62);
+    private static final Color COLOR_FONDO_FIN = new Color(110, 24, 92);
+
+    // Degradado suave del formulario (lila claro a rosado/coral muy tenue, sin
+    // blanco cegador)
+    private static final Color COLOR_TARJETA_INICIO = new Color(245, 239, 255);
+    private static final Color COLOR_TARJETA_FIN = new Color(255, 241, 247);
+
+    private static final Color COLOR_INPUT_FONDO = new Color(255, 252, 255);
+    private static final Color COLOR_TEXTO_PRINCIPAL = new Color(24, 16, 46);
+    private static final Color COLOR_TEXTO_SECUNDARIO = new Color(102, 88, 138);
+
+    // Degradado del botón principal (magenta vibrante a coral/naranja estilo GTA
+    // VI)
+    private static final Color COLOR_PRIMARIO_INICIO = new Color(236, 72, 153);
+    private static final Color COLOR_PRIMARIO_FIN = new Color(249, 115, 22);
+    private static final Color COLOR_PRIMARIO_HOVER_INICIO = new Color(219, 39, 119);
+    private static final Color COLOR_PRIMARIO_HOVER_FIN = new Color(234, 88, 12);
+
+    private static final Color COLOR_SECUNDARIO_FONDO = new Color(255, 252, 255);
+    private static final Color COLOR_SECUNDARIO_HOVER = new Color(252, 231, 243);
+    private static final Color COLOR_BORDE = new Color(216, 198, 232);
+    private static final Color COLOR_ERROR = new Color(225, 29, 72);
+    private static final Color COLOR_EXITO = new Color(16, 185, 129);
 
     private static final Font FUENTE_TITULO = new Font("SansSerif", Font.BOLD, 21);
     private static final Font FUENTE_SUBTITULO = new Font("SansSerif", Font.PLAIN, 12);
@@ -82,6 +97,8 @@ public class VistaLogin extends JFrame {
             UIManager.put("Component.arc", 10);
             UIManager.put("TextComponent.arc", 10);
             UIManager.put("Button.arc", 10);
+            UIManager.put("Component.focusColor", new Color(236, 72, 153));
+            UIManager.put("Component.focusedBorderColor", new Color(236, 72, 153));
         } catch (Exception ex) {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -99,20 +116,47 @@ public class VistaLogin extends JFrame {
         setResizable(false);
 
         iconoOjoAbierto = new IconoOjo(18, 18, false, COLOR_TEXTO_SECUNDARIO);
-        iconoOjoCerrado = new IconoOjo(18, 18, true, COLOR_PRIMARIO);
+        iconoOjoCerrado = new IconoOjo(18, 18, true, COLOR_PRIMARIO_INICIO);
 
-        JPanel panelFondo = new JPanel(new BorderLayout());
-        panelFondo.setBackground(COLOR_FONDO);
+        // Panel de fondo con degradado
+        JPanel panelFondo = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                GradientPaint gp = new GradientPaint(
+                        0, 0, COLOR_FONDO_INICIO,
+                        getWidth(), getHeight(), COLOR_FONDO_FIN);
+                g2.setPaint(gp);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+            }
+        };
         panelFondo.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
-        // Tarjeta central
-        JPanel tarjeta = new JPanel();
+        // Tarjeta del formulario con degradado suave
+        JPanel tarjeta = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                GradientPaint gp = new GradientPaint(
+                        0, 0, COLOR_TARJETA_INICIO,
+                        getWidth(), getHeight(), COLOR_TARJETA_FIN);
+                g2.setPaint(gp);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+
+                setOpaque(false);
+                super.paintComponent(g);
+            }
+        };
         tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS));
-        tarjeta.setBackground(COLOR_TARJETA);
+        tarjeta.setOpaque(false);
         tarjeta.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(COLOR_BORDE, 1),
-                BorderFactory.createEmptyBorder(24, 24, 24, 24)
-        ));
+                BorderFactory.createEmptyBorder(24, 24, 24, 24)));
 
         // Encabezado
         JLabel lblTitulo = new JLabel("Sistema Académico UNIAJC", SwingConstants.CENTER);
@@ -135,6 +179,7 @@ public class VistaLogin extends JFrame {
         txtUsername = new JTextField();
         txtUsername.setFont(FUENTE_INPUT);
         txtUsername.setForeground(COLOR_TEXTO_PRINCIPAL);
+        txtUsername.setBackground(COLOR_INPUT_FONDO);
         txtUsername.setAlignmentX(Component.LEFT_ALIGNMENT);
         txtUsername.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         txtUsername.setPreferredSize(new Dimension(340, 40));
@@ -157,10 +202,12 @@ public class VistaLogin extends JFrame {
         txtContrasena = new JPasswordField();
         txtContrasena.setFont(FUENTE_INPUT);
         txtContrasena.setForeground(COLOR_TEXTO_PRINCIPAL);
+        txtContrasena.setBackground(COLOR_INPUT_FONDO);
         txtContrasena.putClientProperty("JTextField.placeholderText", "Ingresa tu contraseña");
         echoCharOriginal = txtContrasena.getEchoChar();
 
         btnToggleContrasena = new JToggleButton(iconoOjoAbierto);
+        btnToggleContrasena.setBackground(COLOR_INPUT_FONDO);
         btnToggleContrasena.setFocusPainted(false);
         btnToggleContrasena.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnToggleContrasena.setPreferredSize(new Dimension(42, 40));
@@ -186,36 +233,63 @@ public class VistaLogin extends JFrame {
         tarjeta.add(lblMensaje);
         tarjeta.add(Box.createVerticalStrut(8));
 
-        // Botón principal
-        btnIngresar = new JButton("Iniciar Sesión");
+        // Botón principal con degradado
+        btnIngresar = new JButton("Iniciar Sesión") {
+            private boolean hover = false;
+
+            {
+                addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        hover = true;
+                        repaint();
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        hover = false;
+                        repaint();
+                    }
+                });
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+                Color c1 = hover ? COLOR_PRIMARIO_HOVER_INICIO : COLOR_PRIMARIO_INICIO;
+                Color c2 = hover ? COLOR_PRIMARIO_HOVER_FIN : COLOR_PRIMARIO_FIN;
+                if (!isEnabled()) {
+                    c1 = new Color(180, 140, 165);
+                    c2 = new Color(190, 150, 130);
+                }
+
+                GradientPaint gp = new GradientPaint(0, 0, c1, getWidth(), 0, c2);
+                g2.setPaint(gp);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                g2.dispose();
+
+                setContentAreaFilled(false);
+                super.paintComponent(g);
+            }
+        };
         btnIngresar.setFont(FUENTE_BOTON);
-        btnIngresar.setBackground(COLOR_PRIMARIO);
         btnIngresar.setForeground(Color.WHITE);
         btnIngresar.setFocusPainted(false);
+        btnIngresar.setBorderPainted(false);
+        btnIngresar.setContentAreaFilled(false);
         btnIngresar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnIngresar.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnIngresar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
         btnIngresar.setPreferredSize(new Dimension(340, 42));
 
-        btnIngresar.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (btnIngresar.isEnabled()) {
-                    btnIngresar.setBackground(COLOR_PRIMARIO_HOVER);
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                btnIngresar.setBackground(COLOR_PRIMARIO);
-            }
-        });
-
         // Botón cancelar
         btnCancelar = new JButton("Cancelar");
         btnCancelar.setFont(FUENTE_BOTON_SECUNDARIO);
         btnCancelar.setBackground(COLOR_SECUNDARIO_FONDO);
-        btnCancelar.setForeground(COLOR_TEXTO_SECUNDARIO);
+        btnCancelar.setForeground(COLOR_PRIMARIO_HOVER_INICIO);
         btnCancelar.setFocusPainted(false);
         btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnCancelar.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -371,15 +445,12 @@ public class VistaLogin extends JFrame {
             int centerY = y + height / 2;
             int curvaY = Math.max(2, height / 4);
 
-            // Contorno superior e inferior del ojo
             g2.drawArc(left, centerY - curvaY, right - left, curvaY * 2, 0, 180);
             g2.drawArc(left, centerY - curvaY, right - left, curvaY * 2, 180, 180);
 
-            // Pupila central
             int radioPupila = 4;
             g2.fillOval(x + (width - radioPupila) / 2, y + (height - radioPupila) / 2, radioPupila, radioPupila);
 
-            // Línea diagonal cuando está tachado (contraseña visible)
             if (tachado) {
                 g2.drawLine(left + 1, y + height - 2, right - 1, y + 2);
             }
