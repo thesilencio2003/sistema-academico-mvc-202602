@@ -12,6 +12,7 @@ public class Usuario {
     private Timestamp fechaCreacion;
     private String email;
     private Timestamp ultimoAcceso;
+    private Integer estudianteId;
 
     public Usuario() {
         this.activo = true;
@@ -27,7 +28,7 @@ public class Usuario {
         this.fechaCreacion = fechaCreacion;
     }
 
-    public Usuario(int id, String username, String password, String nombre, String rol, boolean activo, Timestamp fechaCreacion, String email, Timestamp ultimoAcceso) {
+    public Usuario(int id, String username, String password, String nombre, String rol, boolean activo, Timestamp fechaCreacion, String email, Timestamp ultimoAcceso, Integer estudianteId) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -37,6 +38,7 @@ public class Usuario {
         this.fechaCreacion = fechaCreacion;
         this.email = email;
         this.ultimoAcceso = ultimoAcceso;
+        this.estudianteId = estudianteId;
     }
 
     public Usuario(String username, String password, String nombre, String rol, boolean activo) {
@@ -54,6 +56,16 @@ public class Usuario {
         this.rol = rol;
         this.activo = activo;
         this.email = email;
+    }
+
+    public Usuario(String username, String password, String nombre, String rol, boolean activo, String email, Integer estudianteId) {
+        this.username = username;
+        this.password = password;
+        this.nombre = nombre;
+        this.rol = rol;
+        this.activo = activo;
+        this.email = email;
+        this.estudianteId = estudianteId;
     }
 
     public int getId() {
@@ -128,6 +140,14 @@ public class Usuario {
         this.ultimoAcceso = ultimoAcceso;
     }
 
+    public Integer getEstudianteId() {
+        return estudianteId;
+    }
+
+    public void setEstudianteId(Integer estudianteId) {
+        this.estudianteId = estudianteId;
+    }
+
     @Override
     public String toString() {
         return "Usuario{" +
@@ -139,6 +159,7 @@ public class Usuario {
                 ", fechaCreacion=" + fechaCreacion +
                 ", email='" + email + '\'' +
                 ", ultimoAcceso=" + ultimoAcceso +
+                ", estudianteId=" + estudianteId +
                 '}';
     }
 }

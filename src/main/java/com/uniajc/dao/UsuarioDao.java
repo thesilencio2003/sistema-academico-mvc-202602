@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +16,8 @@ import com.uniajc.modelo.Usuario;
 public class UsuarioDao {
 
     public void guardar(Usuario usuario) {
-        String sql = "INSERT INTO \"practica-mvc\".usuarios (username, password, nombre, rol, activo, email) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO \"practica-mvc\".usuarios (username, password, nombre, rol, activo, email, estudiante_id) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -26,6 +28,11 @@ public class UsuarioDao {
             pstmt.setString(4, usuario.getRol());
             pstmt.setBoolean(5, usuario.isActivo());
             pstmt.setString(6, usuario.getEmail());
+            if (usuario.getEstudianteId() != null && usuario.getEstudianteId() > 0) {
+                pstmt.setInt(7, usuario.getEstudianteId());
+            } else {
+                pstmt.setNull(7, Types.INTEGER);
+            }
 
             pstmt.executeUpdate();
 
@@ -41,7 +48,8 @@ public class UsuarioDao {
 
     public List<Usuario> obtenerTodos() {
         List<Usuario> lista = new ArrayList<>();
-        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion, email, ultimo_acceso FROM \"practica-mvc\".usuarios ORDER BY id ASC";
+        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion, email, ultimo_acceso, estudiante_id " +
+                     "FROM \"practica-mvc\".usuarios ORDER BY id ASC";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -57,7 +65,8 @@ public class UsuarioDao {
     }
 
     public Optional<Usuario> buscarPorId(int id) {
-        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion, email, ultimo_acceso FROM \"practica-mvc\".usuarios WHERE id = ?";
+        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion, email, ultimo_acceso, estudiante_id " +
+                     "FROM \"practica-mvc\".usuarios WHERE id = ?";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -76,7 +85,8 @@ public class UsuarioDao {
     }
 
     public Optional<Usuario> buscarPorUsername(String username) {
-        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion, email, ultimo_acceso FROM \"practica-mvc\".usuarios WHERE LOWER(username) = LOWER(?)";
+        String sql = "SELECT id, username, password, nombre, rol, activo, fecha_creacion, email, ultimo_acceso, estudiante_id " +
+                     "FROM \"practica-mvc\".usuarios WHERE LOWER(username) = LOWER(?)";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -95,7 +105,9 @@ public class UsuarioDao {
     }
 
     public void actualizar(Usuario usuario) {
-        String sql = "UPDATE \"practica-mvc\".usuarios SET username = ?, password = ?, nombre = ?, rol = ?, activo = ?, email = ? WHERE id = ?";
+        String sql = "UPDATE \"practica-mvc\".usuarios " +
+                     "SET username = ?, password = ?, nombre = ?, rol = ?, activo = ?, email = ?, estudiante_id = ? " +
+                     "WHERE id = ?";
 
         try (Connection conn = DatabaseConexion.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -106,7 +118,12 @@ public class UsuarioDao {
             pstmt.setString(4, usuario.getRol());
             pstmt.setBoolean(5, usuario.isActivo());
             pstmt.setString(6, usuario.getEmail());
-            pstmt.setInt(7, usuario.getId());
+            if (usuario.getEstudianteId() != null && usuario.getEstudianteId() > 0) {
+                pstmt.setInt(7, usuario.getEstudianteId());
+            } else {
+                pstmt.setNull(7, Types.INTEGER);
+            }
+            pstmt.setInt(8, usuario.getId());
 
             int filas = pstmt.executeUpdate();
             if (filas == 0) {
@@ -157,6 +174,11 @@ public class UsuarioDao {
         usuario.setFechaCreacion(rs.getTimestamp("fecha_creacion"));
         usuario.setEmail(rs.getString("email"));
         usuario.setUltimoAcceso(rs.getTimestamp("ultimo_acceso"));
+
+        int estId = rs.getInt("estudiante_id");
+        if (!rs.wasNull()) {
+            usuario.setEstudianteId(estId);
+        }
         return usuario;
     }
 }

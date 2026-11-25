@@ -98,6 +98,7 @@ public class VistaPrincipalSwing extends JFrame {
         VistaGrupoSwing vistaGrupoSwing = new VistaGrupoSwing();
         VistaInscripcionSwing vistaInscripcionSwing = new VistaInscripcionSwing();
         VistaCalificacionSwing vistaCalificacionSwing = new VistaCalificacionSwing();
+        VistaUsuarioSwing vistaUsuarioSwing = new VistaUsuarioSwing();
 
         mainPanel.add(panelBienvenida, "INICIO");
         mainPanel.add(vistaEstudianteSwing, "ESTUDIANTES");
@@ -106,6 +107,7 @@ public class VistaPrincipalSwing extends JFrame {
         mainPanel.add(vistaGrupoSwing, "GRUPOS");
         mainPanel.add(vistaInscripcionSwing, "INSCRIPCIONES");
         mainPanel.add(vistaCalificacionSwing, "CALIFICACIONES");
+        mainPanel.add(vistaUsuarioSwing, "USUARIOS");
 
         // Menú lateral desplegable
         menuLateral = new MenuLateralDrawer(
@@ -214,6 +216,7 @@ public class VistaPrincipalSwing extends JFrame {
             case "Grupos" -> cardLayout.show(mainPanel, "GRUPOS");
             case "Inscripciones" -> cardLayout.show(mainPanel, "INSCRIPCIONES");
             case "Calificaciones" -> cardLayout.show(mainPanel, "CALIFICACIONES");
+            case "Usuarios" -> cardLayout.show(mainPanel, "USUARIOS");
             case "Cerrar sesión" -> cerrarSesion();
             default -> cardLayout.show(mainPanel, "INICIO");
         }
@@ -321,6 +324,7 @@ public class VistaPrincipalSwing extends JFrame {
                     "Grupos",
                     "Inscripciones",
                     "Calificaciones",
+                    "Usuarios",
                     "Cerrar sesión"
             };
 

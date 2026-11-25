@@ -85,7 +85,49 @@ public class UsuarioService {
             throw new IllegalArgumentException("Ya existe un usuario con el username: " + usuario.getUsername());
         }
 
+        String passwordHasheada = calcularSHA256(usuario.getPassword().trim());
+        usuario.setPassword(passwordHasheada);
+
         usuarioDao.guardar(usuario);
+    }
+
+    public void actualizarUsuario(Usuario usuario, String nuevaPassword) {
+        if (usuario == null || usuario.getId() <= 0) {
+            throw new IllegalArgumentException("Usuario inválido.");
+        }
+
+        Optional<Usuario> existente = usuarioDao.buscarPorId(usuario.getId());
+        if (existente.isEmpty()) {
+            throw new IllegalArgumentException("No se encontró el usuario con ID: " + usuario.getId());
+        }
+
+        // Si se cambia el username, verificar que no esté ocupado por otro
+        if (usuario.getUsername() != null && !usuario.getUsername().trim().equalsIgnoreCase(existente.get().getUsername())) {
+            Optional<Usuario> duplicado = usuarioDao.buscarPorUsername(usuario.getUsername());
+            if (duplicado.isPresent() && duplicado.get().getId() != usuario.getId()) {
+                throw new IllegalArgumentException("El username '" + usuario.getUsername() + "' ya está en uso.");
+            }
+        }
+
+        // Si se proporciona una nueva contraseña, se hashea con SHA-256
+        if (nuevaPassword != null && !nuevaPassword.trim().isEmpty()) {
+            usuario.setPassword(calcularSHA256(nuevaPassword.trim()));
+        } else {
+            usuario.setPassword(existente.get().getPassword());
+        }
+
+        usuarioDao.actualizar(usuario);
+    }
+
+    public void eliminarUsuario(int id) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser mayor a 0.");
+        }
+        Optional<Usuario> existente = usuarioDao.buscarPorId(id);
+        if (existente.isEmpty()) {
+            throw new IllegalArgumentException("Usuario no encontrado con ID: " + id);
+        }
+        usuarioDao.eliminar(id);
     }
 
     public Optional<Usuario> buscarPorUsername(String username) {

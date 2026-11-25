@@ -38,8 +38,8 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    public void testAutenticarExitosoMD5() {
-        Usuario usuario = usuarioService.autenticar("admin", "admin123");
+    public void testAutenticarExitosoAdmin() {
+        Usuario usuario = usuarioService.autenticar("admin", "admin");
         assertNotNull(usuario);
         assertEquals("admin", usuario.getUsername());
     }
@@ -47,6 +47,27 @@ public class UsuarioServiceTest {
     @Test
     public void testAutenticarContrasenaErronea() {
         assertThrows(IllegalArgumentException.class, () -> usuarioService.autenticar("alejandro", "password_incorrecta"));
+    }
+
+    @Test
+    public void testRegistrarUsuarioConSHA256() {
+        String testUser = "user_sha_" + System.currentTimeMillis();
+        Usuario nuevo = new Usuario(testUser, "claveSecreta123", "Prueba SHA", "ADMIN", true, "test@uniajc.edu.co");
+        
+        usuarioService.registrarUsuario(nuevo);
+        
+        // Verificar que se guardó y la contraseña tiene longitud de hash SHA-256 (64 caracteres hexadecimales)
+        Usuario guardado = usuarioService.buscarPorUsername(testUser).orElse(null);
+        assertNotNull(guardado);
+        assertEquals(64, guardado.getPassword().length(), "La contraseña debe guardarse con hash SHA-256 (64 hex)");
+        
+        // Verificar que autentica exitosamente con la contraseña plana
+        Usuario autenticado = usuarioService.autenticar(testUser, "claveSecreta123");
+        assertNotNull(autenticado);
+        assertEquals(testUser, autenticado.getUsername());
+        
+        // Limpiar registro de prueba
+        usuarioService.eliminarUsuario(guardado.getId());
     }
 }
 

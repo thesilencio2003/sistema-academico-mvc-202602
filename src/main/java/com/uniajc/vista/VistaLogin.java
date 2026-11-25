@@ -359,8 +359,13 @@ public class VistaLogin extends JFrame {
             mostrarExito("¡Bienvenido, " + usuario.getNombre() + " (" + usuario.getRol() + ")!");
 
             SwingUtilities.invokeLater(() -> {
-                VistaPrincipalSwing vistaPrincipal = new VistaPrincipalSwing();
-                vistaPrincipal.setVisible(true);
+                if ("ESTUDIANTE".equalsIgnoreCase(usuario.getRol())) {
+                    VistaPortalEstudianteSwing portalEstudiante = new VistaPortalEstudianteSwing(usuario);
+                    portalEstudiante.setVisible(true);
+                } else {
+                    VistaPrincipalSwing vistaPrincipal = new VistaPrincipalSwing();
+                    vistaPrincipal.setVisible(true);
+                }
                 dispose();
             });
 
